@@ -1,5 +1,7 @@
 # WebSVC Runtime (websvc-rt)
+
 [English](./README.md) | [简体中文](./README.zh-CN.md)
+
 > **The high-performance, WebGPU-accelerated inference engine for Singing Voice Conversion (SVC) based on RVC. 100% browser-based.**
 
 WebSVC Runtime is a specialized execution engine designed to bring industry-standard AI singing voice conversion directly to the web browser. By leveraging **WebGPU** and **ONNX Runtime Web**, it enables high-fidelity, low-latency voice inference without the need for a backend server.
@@ -23,6 +25,7 @@ Existing web-based voice tools often require complex backend setups or offer poo
 ## 🏗 Architecture
 
 The project is structured as a modular library:
+
 - **Core Engine**: Manages ONNX sessions, WebGPU memory, and tensor scheduling.
 - **DSP Module**: High-performance audio resampling and FFT processing.
 - **WASM Worker**: Offloads heavy CPU tasks like F0 (pitch) estimation.
