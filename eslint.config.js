@@ -5,7 +5,7 @@ import { defineConfig } from "eslint/config";
 
 export default defineConfig([
   {
-    ignores: ["dist/**", "node_modules/**", "static/onnx-wasm/**"],
+    ignores: ["dist/**", "node_modules/**"],
   },
   {
     files: ["src/**/*.{ts,tsx,js,mjs,cjs}"],
