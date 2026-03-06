@@ -1,0 +1,86 @@
+:root {
+  color-scheme: light;
+  --bg: #f3f6fb;
+  --panel: #ffffff;
+  --text: #1d2430;
+  --muted: #5d6778;
+  --line: #d8dfeb;
+  --accent: #0b6bcb;
+  --accent-hover: #0a5cad;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background:
+    radial-gradient(circle at top left, #ffffff 0%, transparent 45%),
+    radial-gradient(circle at bottom right, #e9f0ff 0%, transparent 35%), var(--bg);
+  color: var(--text);
+}
+
+#app {
+  width: min(100%, 480px);
+  display: grid;
+  gap: 10px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 8%);
+}
+
+label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+input[type="file"] {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px;
+  background: #fcfdff;
+}
+
+button {
+  margin-top: 6px;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent);
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--accent-hover);
+}
+
+#status {
+  min-height: 20px;
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+#download {
+  display: none;
+  width: fit-content;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+#download:hover {
+  text-decoration: underline;
+}

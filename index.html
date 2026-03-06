@@ -6,7 +6,17 @@
     <title>WebSVC-RT Console</title>
   </head>
   <body>
-    <div id="app">Initializing WebSVC-RT environment...</div>
+    <div id="app">
+      <label for="pth">Model (.pth)</label>
+      <input id="pth" type="file" accept=".pth" />
+
+      <label for="audio">Source Audio (.mp3, .wav)</label>
+      <input id="audio" type="file" accept=".mp3,.wav,audio/mpeg,audio/wav" />
+
+      <button id="run" type="button">Run</button>
+      <p id="status"></p>
+      <a id="download"></a>
+    </div>
     <noscript>Please enable JavaScript to run this app.</noscript>
     <script type="module" src="/src/app/main.ts"></script>
   </body>
