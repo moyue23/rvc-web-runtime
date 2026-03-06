@@ -15,7 +15,10 @@ const PIPELINE_STEPS: ReadonlyArray<{ state: EngineState; progress: number }> = 
  * Current version uses placeholders for model/feature/F0/synth stages and
  * focuses on orchestration, progress tracking, and WAV export.
  */
-export async function runPipeline(files: PipelineFiles, callbacks: PipelineCallbacks = {}): Promise<RuntimeContext> {
+export async function runPipeline(
+  files: PipelineFiles,
+  callbacks: PipelineCallbacks = {},
+): Promise<RuntimeContext> {
   const ctx: RuntimeContext = { state: "idle", progress: 0 };
   const updateState = (state: EngineState, progress: number) => {
     ctx.state = state;
@@ -59,7 +62,9 @@ export async function runPipeline(files: PipelineFiles, callbacks: PipelineCallb
   }
 }
 
-async function decodeAudioToMonoPcm(file: File): Promise<{ audio: Float32Array; sampleRate: number }> {
+async function decodeAudioToMonoPcm(
+  file: File,
+): Promise<{ audio: Float32Array; sampleRate: number }> {
   const inputBuffer = await file.arrayBuffer();
   const audioContext = new AudioContext();
 
