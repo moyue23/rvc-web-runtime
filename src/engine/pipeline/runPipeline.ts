@@ -1,5 +1,5 @@
 import type { EngineState, RuntimeContext } from "../types/runtime/runtime";
-import type { PipelineFiles, PipelineCallbacks } from "../index";
+import type { PipelineFiles, PipelineCallbacks } from "../types/contracts/pipeline";
 
 const PIPELINE_STEPS: ReadonlyArray<{ state: EngineState; progress: number }> = [
   { state: "loading", progress: 10 },
