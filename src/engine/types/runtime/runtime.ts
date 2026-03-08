@@ -5,22 +5,22 @@
 export type EngineState =
   // Waiting for input; no work started yet.
   | "idle"
-  // Reading and preparing input files/audio.
-  | "loading"
+  // Validating files, reading bytes, and decoding source audio.
+  | "input_preparation"
   // Converting .pth weights into an ONNX model buffer.
-  | "parsing_model"
+  | "model_parsing"
   // Stage A: content feature extraction (e.g., Hubert).
-  | "extracting_feature"
+  | "feature_extraction"
   // Stage B: F0/pitch estimation (e.g., RMVPE).
-  | "estimating_f0"
+  | "pitch_estimation"
   // Stage C: voice synthesis with the target model.
-  | "synthesizing"
+  | "voice_synthesis"
   // Mixing, crossfade, limiting, and WAV encoding.
   | "post_processing"
   // Pipeline finished successfully.
-  | "done"
+  | "success"
   // Pipeline failed; check errorMessage and logs.
-  | "error";
+  | "failed";
 
 /**
  * RuntimeContext is the shared in-memory record for a single task run.

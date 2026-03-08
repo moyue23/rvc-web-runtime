@@ -2,11 +2,11 @@ import type { EngineState, RuntimeContext } from "../types/runtime/runtime";
 import type { PipelineFiles, PipelineCallbacks } from "../types/contracts/pipeline";
 
 const PIPELINE_STEPS: ReadonlyArray<{ state: EngineState; progress: number }> = [
-  { state: "loading", progress: 10 },
-  { state: "parsing_model", progress: 30 },
-  { state: "extracting_feature", progress: 50 },
-  { state: "estimating_f0", progress: 65 },
-  { state: "synthesizing", progress: 80 },
+  { state: "input_preparation", progress: 10 },
+  { state: "model_parsing", progress: 30 },
+  { state: "feature_extraction", progress: 50 },
+  { state: "pitch_estimation", progress: 65 },
+  { state: "voice_synthesis", progress: 80 },
   { state: "post_processing", progress: 92 },
 ];
 
@@ -51,10 +51,10 @@ export async function runPipeline(
     updateState(PIPELINE_STEPS[5].state, PIPELINE_STEPS[5].progress);
     ctx.outputWav = encodeMonoPcmToWav(ctx.outputAudio, ctx.sampleRate);
 
-    updateState("done", 100);
+    updateState("success", 100);
     return ctx;
   } catch (error) {
-    ctx.state = "error";
+    ctx.state = "failed";
     ctx.progress = 100;
     ctx.errorMessage = normalizeErrorMessage(error);
     callbacks.onStateChange?.(ctx.state, ctx.progress, ctx);

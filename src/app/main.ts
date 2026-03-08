@@ -41,7 +41,7 @@ async function onRun(): Promise<void> {
     },
   });
 
-  if (ctx.state === "done" && ctx.outputWav) {
+  if (ctx.state === "success" && ctx.outputWav) {
     createDownload(ctx.outputWav);
     setText("status", "Done.");
     return;
