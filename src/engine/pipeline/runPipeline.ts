@@ -1,5 +1,6 @@
 import type { EngineState, RuntimeContext } from "../types/runtime/runtime";
 import type { PipelineFiles, PipelineCallbacks } from "../types/contracts/pipeline";
+import { prepareInputAudio } from "../audio";
 
 const PIPELINE_STEPS: ReadonlyArray<{ state: EngineState; progress: number }> = [
   { state: "input_preparation", progress: 10 },
@@ -28,7 +29,7 @@ export async function runPipeline(
 
   try {
     updateState(PIPELINE_STEPS[0].state, PIPELINE_STEPS[0].progress);
-    const decoded = await decodeAudioToMonoPcm(files.audio);
+    const decoded = await prepareInputAudio(files.audio);
     ctx.inputAudio = decoded.audio;
     ctx.sampleRate = decoded.sampleRate;
 
@@ -60,40 +61,6 @@ export async function runPipeline(
     callbacks.onStateChange?.(ctx.state, ctx.progress, ctx);
     return ctx;
   }
-}
-
-async function decodeAudioToMonoPcm(
-  file: File,
-): Promise<{ audio: Float32Array; sampleRate: number }> {
-  const inputBuffer = await file.arrayBuffer();
-  const audioContext = new AudioContext();
-
-  try {
-    const decoded = await audioContext.decodeAudioData(inputBuffer.slice(0));
-    const mono = mixToMono(decoded);
-    return { audio: mono, sampleRate: decoded.sampleRate };
-  } finally {
-    await audioContext.close();
-  }
-}
-
-function mixToMono(audioBuffer: AudioBuffer): Float32Array {
-  if (audioBuffer.numberOfChannels === 1) {
-    return new Float32Array(audioBuffer.getChannelData(0));
-  }
-
-  const length = audioBuffer.length;
-  const channelCount = audioBuffer.numberOfChannels;
-  const mono = new Float32Array(length);
-
-  for (let channelIndex = 0; channelIndex < channelCount; channelIndex += 1) {
-    const channelData = audioBuffer.getChannelData(channelIndex);
-    for (let sampleIndex = 0; sampleIndex < length; sampleIndex += 1) {
-      mono[sampleIndex] += channelData[sampleIndex] / channelCount;
-    }
-  }
-
-  return mono;
 }
 
 function buildPlaceholderF0(sampleLength: number): Float32Array {
