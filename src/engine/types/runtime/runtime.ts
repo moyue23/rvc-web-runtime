@@ -7,7 +7,7 @@ export type EngineState =
   | "idle"
   // Validating files, reading bytes, and decoding source audio.
   | "input_preparation"
-  // Converting .pth weights into an ONNX model buffer.
+  // Loading an ONNX model directly, or converting .pth to ONNX first.
   | "model_parsing"
   // Stage A: content feature extraction (e.g., Hubert).
   | "feature_extraction"
@@ -35,7 +35,7 @@ export interface RuntimeContext {
   inputAudio?: Float32Array;
   // Sample rate of inputAudio/outputAudio.
   sampleRate?: number;
-  // ONNX model bytes converted from .pth.
+  // ONNX model bytes used for inference.
   onnxBuffer?: ArrayBuffer;
   // Content features from stage A.
   hiddenStates?: Float32Array;

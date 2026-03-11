@@ -4,7 +4,7 @@ import type { EngineState, RuntimeContext } from "../runtime/runtime";
  * External input files for one pipeline run.
  */
 export type PipelineFiles = {
-  pth: File;
+  model: File;
   audio: File;
 };
 

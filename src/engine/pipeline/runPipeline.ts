@@ -1,6 +1,7 @@
 import type { EngineState, RuntimeContext } from "../types/runtime/runtime";
 import type { PipelineFiles, PipelineCallbacks } from "../types/contracts/pipeline";
 import { prepareInputAudio } from "../audio";
+import { loadModelToOnnxBuffer } from "../model/loadModelToOnnxBuffer";
 
 const PIPELINE_STEPS: ReadonlyArray<{ state: EngineState; progress: number }> = [
   { state: "input_preparation", progress: 10 },
@@ -30,12 +31,14 @@ export async function runPipeline(
   try {
     updateState(PIPELINE_STEPS[0].state, PIPELINE_STEPS[0].progress);
     const decoded = await prepareInputAudio(files.audio);
-    ctx.inputAudio = decoded.audio;
-    ctx.sampleRate = decoded.sampleRate;
+    const audio = decoded.audio;
+    const sampleRate = decoded.sampleRate;
+
+    ctx.inputAudio = audio;
+    ctx.sampleRate = sampleRate;
 
     updateState(PIPELINE_STEPS[1].state, PIPELINE_STEPS[1].progress);
-    // Placeholder: this currently just reads .pth bytes.
-    ctx.onnxBuffer = await files.pth.arrayBuffer();
+    ctx.onnxBuffer = await loadModelToOnnxBuffer(files.model);
 
     updateState(PIPELINE_STEPS[2].state, PIPELINE_STEPS[2].progress);
     // Placeholder: feature extraction should be replaced with Hubert output.
@@ -43,14 +46,14 @@ export async function runPipeline(
 
     updateState(PIPELINE_STEPS[3].state, PIPELINE_STEPS[3].progress);
     // Placeholder: one fake F0 value per 512 samples.
-    ctx.f0 = buildPlaceholderF0(ctx.inputAudio.length);
+    ctx.f0 = buildPlaceholderF0(audio.length);
 
     updateState(PIPELINE_STEPS[4].state, PIPELINE_STEPS[4].progress);
     // Placeholder: synthesis currently passes through the source audio.
-    ctx.outputAudio = ctx.inputAudio;
+    ctx.outputAudio = audio;
 
     updateState(PIPELINE_STEPS[5].state, PIPELINE_STEPS[5].progress);
-    ctx.outputWav = encodeMonoPcmToWav(ctx.outputAudio, ctx.sampleRate);
+    ctx.outputWav = encodeMonoPcmToWav(ctx.outputAudio, sampleRate);
 
     updateState("success", 100);
     return ctx;
