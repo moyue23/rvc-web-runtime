@@ -1,0 +1,8 @@
+export const ErrorCodes = {
+  FILE_EMPTY: "AUDIO_FILE_EMPTY",
+  INVALID_TYPE: "AUDIO_INVALID_TYPE",
+  FILE_READ_FAILED: "AUDIO_FILE_READ_FAILED",
+  DECODE_FAILED: "AUDIO_DECODE_FAILED",
+} as const;
+
+export type ErrorCode = (typeof ErrorCodes)[keyof typeof ErrorCodes];
