@@ -8,31 +8,35 @@
 
 > **The high-performance, WebGPU-accelerated inference engine for Singing Voice Conversion (SVC) based on RVC. 100% browser-based.**
 
-RVC-Web-Runtime is a specialized execution engine designed to bring industry-standard AI singing voice conversion directly to the web browser. By leveraging **WebGPU** and **ONNX Runtime Web**, it enables high-fidelity, low-latency voice inference without the need for a backend server.
+RVC-Web-Runtime is a specialized runtime engine focused on delivering industry-standard AI singing voice conversion (RVC) directly in the browser. Powered by **WebGPU** and **ONNX Runtime Web**, it performs voice inference without any backend server.
 
 ## 🌟 Key Features
 
-- **WebGPU Acceleration**: Utilizing the latest browser-based GPU compute for neural network inference.
-- **RVC Compatibility**: Specifically optimized for Retrieval-based Voice Conversion (RVC) architectures (v1/v2).
-- **Privacy First**: All audio processing happens locally on the user's device. No audio data ever leaves the browser.
-- **Zero Server Cost**: Scale to millions of users with static file hosting (GitHub Pages/Vercel).
-- **Framework Agnostic**: Pure TypeScript implementation, compatible with React, Vue, Svelte, or Vanilla JS.
+- **WebGPU-driven local inference**: Uses `onnxruntime-web` to fully run RVC models in-browser with no server relay, ensuring data privacy and zero runtime server cost.
 
-## 🚀 Why RVC-Web-Runtime?
+- **Flexible model support**: Natively supports standard `.onnx` models and includes an optional `.pth` auto-conversion adapter for smooth migration from training to production.
 
-Existing web-based voice tools often require complex backend setups or offer poor audio quality. **RVC-Web-Runtime** changes this by providing:
-
-- **Direct `.pth` Ingestion**: No need to pre-convert models on a PC. Drag and drop your RVC weights, and our engine handles the rest in-browser.
-- **Studio-Quality Covers**: Optimized for full-song rendering with advanced slicing and crossfading algorithms to prevent memory crashes while maintaining fidelity.
-- **End-to-End Pipeline**: From feature extraction to final mixing, it's a complete studio in a single library.
+- **End-to-end audio pipeline**: Integrates the full workflow from feature extraction (HuBERT) and pitch estimation (RMVPE) to acoustic synthesis (Generator), with slicing and mixing optimizations for long audio rendering.
 
 ## 🏗 Architecture
 
-The project is structured as a modular library:
-
-- **Core Engine**: Manages ONNX sessions, WebGPU memory, and tensor scheduling.
-- **DSP Module**: High-performance audio resampling and FFT processing.
-- **WASM Worker**: Offloads heavy CPU tasks like F0 (pitch) estimation.
+```text
+rvc-web-runtime/
+├── src/
+│ ├── engine/ # Core inference engine (UI-agnostic)
+│ │ ├── pipeline/ # Task orchestration and state machine
+│ │ ├── audio/ # Audio preprocessing (Decode/Resample)
+│ │ ├── model/ # Model parsing and format adaptation
+│ │ ├── feature/ # HuBERT feature extraction stage
+│ │ ├── pitch/ # RMVPE pitch estimation stage
+│ │ ├── synth/ # RVC acoustic synthesis stage
+│ │ ├── post/ # Post-processing and export (Mix/Wav)
+│ │ └── infra/ # Compute backend scheduling (WebGPU/WASM)
+│ └── app/ # Demo application (Web Demo)
+│ ├── main.ts # Demo entry
+│ └── ui/ # UI components
+└── .github/ # CI/CD automation workflows
+```
 
 ## 🛠 Tech Stack
 
@@ -43,4 +47,4 @@ The project is structured as a modular library:
 
 ## 🚧 Status: Under Construction
 
-This project is currently in its early MVP stage. Stay tuned for the first stable release.
+The project is currently in an early MVP stage. The first stable release is coming soon.
