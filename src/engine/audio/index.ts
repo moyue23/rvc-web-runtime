@@ -4,7 +4,6 @@ import { downmixToMono } from "./processor";
 import { resampleTo16k } from "./resampler";
 import type { AudioData } from "./types";
 
-export { readAsArrayBuffer, decodeToAudioBuffer, downmixToMono, resampleTo16k };
 export type { AudioData } from "./types";
 
 export async function prepareInputAudio(file: File): Promise<AudioData> {

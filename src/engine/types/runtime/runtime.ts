@@ -1,3 +1,5 @@
+import type * as ort from "onnxruntime-web";
+
 /**
  * EngineState defines the current stage of one pipeline run.
  * Use it for progress UI, logs, and error localization.
@@ -39,6 +41,10 @@ export interface RuntimeContext {
   onnxBuffer?: ArrayBuffer;
   // Parsed model metadata when available (e.g. from `.pth` conversion).
   modelMetaData?: RuntimeModelMetaData;
+  // Initialized ONNX Runtime session for model inference.
+  modelSession?: ort.InferenceSession;
+  // Selected execution backend used by the current model session.
+  backend?: "webgpu" | "wasm";
   // Content features from stage A.
   hiddenStates?: Float32Array;
   // Fundamental frequency sequence from stage B.

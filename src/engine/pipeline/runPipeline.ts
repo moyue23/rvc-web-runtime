@@ -1,7 +1,7 @@
 import type { EngineState, RuntimeContext } from "../types/runtime/runtime";
 import type { PipelineFiles, PipelineCallbacks } from "../types/contracts/pipeline";
 import { prepareInputAudio } from "../audio";
-import { prepareModel } from "../model";
+import { createSessionFromOnnxBuffer, prepareModel } from "../model";
 
 interface PipelineStep {
   state: EngineState;
@@ -36,14 +36,18 @@ export async function runPipeline(
   try {
     updateState(PIPELINE_STEPS[0].state, PIPELINE_STEPS[0].progress);
     const { audio, sampleRate } = await prepareInputAudio(files.audio);
-
     ctx.inputAudio = audio;
     ctx.sampleRate = sampleRate;
 
     updateState(PIPELINE_STEPS[1].state, PIPELINE_STEPS[1].progress);
+
     const { onnxBuffer, metaData } = await prepareModel(files.model);
     ctx.onnxBuffer = onnxBuffer;
     ctx.modelMetaData = metaData;
+
+    const { session, backend } = await createSessionFromOnnxBuffer(onnxBuffer);
+    ctx.modelSession = session;
+    ctx.backend = backend;
 
     updateState(PIPELINE_STEPS[2].state, PIPELINE_STEPS[2].progress);
     // Placeholder: feature extraction should be replaced with Hubert output.
