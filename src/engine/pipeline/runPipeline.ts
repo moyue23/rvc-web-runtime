@@ -3,7 +3,12 @@ import type { PipelineFiles, PipelineCallbacks } from "../types/contracts/pipeli
 import { prepareInputAudio } from "../audio";
 import { prepareModel } from "../model";
 
-const PIPELINE_STEPS: ReadonlyArray<{ state: EngineState; progress: number }> = [
+interface PipelineStep {
+  state: EngineState;
+  progress: number;
+}
+
+const PIPELINE_STEPS: ReadonlyArray<PipelineStep> = [
   { state: "input_preparation", progress: 10 },
   { state: "model_parsing", progress: 30 },
   { state: "feature_extraction", progress: 50 },

@@ -23,10 +23,7 @@ export async function readAsArrayBuffer(file: File): Promise<ArrayBuffer> {
 
 function validateAudioFile(file: File): void {
   if (file.size === 0) {
-    throw new RvcError(
-      ErrorCodes.AUDIO_FILE_EMPTY,
-      `The audio file "${file.name}" is empty.`,
-    );
+    throw new RvcError(ErrorCodes.AUDIO_FILE_EMPTY, `The audio file "${file.name}" is empty.`);
   }
 
   const mime = file.type.toLowerCase();

@@ -1,15 +1,7 @@
 import { pthToOnnx } from "rvc-onnx-web";
 import { RvcError } from "../errors/RvcError";
 import { ErrorCodes } from "../errors/errorCodes";
-
-interface ConvertedPthModel {
-  onnxBuffer: ArrayBuffer;
-  metaData: {
-    sampleRate: number;
-    version: string;
-    useF0: boolean;
-  };
-}
+import type { ConvertedPthModel } from "./types";
 
 /**
  * Converts an RVC `.pth` file into `.onnx` binary data.

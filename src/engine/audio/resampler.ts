@@ -1,5 +1,6 @@
 import { RvcError } from "../errors/RvcError";
 import { ErrorCodes } from "../errors/errorCodes";
+import type { AudioData } from "./types";
 
 /**
  * Resamples PCM data to 16kHz for feature-extraction model compatibility.
@@ -7,7 +8,7 @@ import { ErrorCodes } from "../errors/errorCodes";
 export function resampleTo16k(
   data: Float32Array,
   originalRate: number,
-): { audio: Float32Array; sampleRate: number } {
+): AudioData {
   const TARGET_RATE = 16000;
 
   if (!Number.isFinite(originalRate) || originalRate <= 0) {
