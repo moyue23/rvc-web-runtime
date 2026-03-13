@@ -2,8 +2,6 @@ export { readModelAsArrayBuffer, getModelFileExtension } from "./loader";
 export { convertPthToOnnx } from "./pthToOnnx";
 export { resolveModelToOnnxBuffer } from "./resolver";
 
-export type { SessionBackend, CreateSessionOptions, SessionFactoryResult } from "./sessionFactory";
-
 import { getModelFileExtension, readModelAsArrayBuffer } from "./loader";
 import { convertPthToOnnx } from "./pthToOnnx";
 
