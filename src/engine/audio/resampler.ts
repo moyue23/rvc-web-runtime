@@ -12,7 +12,7 @@ export function resampleTo16k(
 
   if (!Number.isFinite(originalRate) || originalRate <= 0) {
     throw new RvcError(
-      ErrorCodes.RESAMPLE_INVALID_RATE,
+      ErrorCodes.AUDIO_RESAMPLE_INVALID_RATE,
       `Invalid input sample rate: ${originalRate}.`,
     );
   }

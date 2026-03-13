@@ -6,7 +6,10 @@ import { ErrorCodes } from "../errors/errorCodes";
  */
 export async function decodeToAudioBuffer(buffer: ArrayBuffer): Promise<AudioBuffer> {
   if (buffer.byteLength === 0) {
-    throw new RvcError(ErrorCodes.DECODE_FAILED, "Failed to decode audio: input buffer is empty.");
+    throw new RvcError(
+      ErrorCodes.AUDIO_DECODE_FAILED,
+      "Failed to decode audio: input buffer is empty.",
+    );
   }
 
   const ctx = createAudioContext();
@@ -14,7 +17,7 @@ export async function decodeToAudioBuffer(buffer: ArrayBuffer): Promise<AudioBuf
   try {
     return await ctx.decodeAudioData(buffer.slice(0));
   } catch (cause) {
-    throw new RvcError(ErrorCodes.DECODE_FAILED, "Failed to decode audio data.", cause);
+    throw new RvcError(ErrorCodes.AUDIO_DECODE_FAILED, "Failed to decode audio data.", cause);
   } finally {
     try {
       await ctx.close();
@@ -35,7 +38,7 @@ function createAudioContext(): AudioContext {
   const Ctor = g.AudioContext ?? g.webkitAudioContext;
   if (!Ctor) {
     throw new RvcError(
-      ErrorCodes.DECODE_FAILED,
+      ErrorCodes.AUDIO_DECODE_FAILED,
       "Failed to decode audio: AudioContext is not supported in this environment.",
     );
   }
@@ -44,7 +47,7 @@ function createAudioContext(): AudioContext {
     return new Ctor();
   } catch (cause) {
     throw new RvcError(
-      ErrorCodes.DECODE_FAILED,
+      ErrorCodes.AUDIO_DECODE_FAILED,
       "Failed to initialize AudioContext for decoding.",
       cause,
     );

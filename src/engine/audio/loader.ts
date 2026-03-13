@@ -14,7 +14,7 @@ export async function readAsArrayBuffer(file: File): Promise<ArrayBuffer> {
     return await file.arrayBuffer();
   } catch (cause) {
     throw new RvcError(
-      ErrorCodes.FILE_READ_FAILED,
+      ErrorCodes.AUDIO_FILE_READ_FAILED,
       `Failed to read audio file "${file.name}".`,
       cause,
     );
@@ -23,7 +23,10 @@ export async function readAsArrayBuffer(file: File): Promise<ArrayBuffer> {
 
 function validateAudioFile(file: File): void {
   if (file.size === 0) {
-    throw new RvcError(ErrorCodes.FILE_EMPTY, `The audio file "${file.name}" is empty.`);
+    throw new RvcError(
+      ErrorCodes.AUDIO_FILE_EMPTY,
+      `The audio file "${file.name}" is empty.`,
+    );
   }
 
   const mime = file.type.toLowerCase();
@@ -33,7 +36,7 @@ function validateAudioFile(file: File): void {
 
   if (!mimeAllowed && !extensionAllowed) {
     throw new RvcError(
-      ErrorCodes.INVALID_TYPE,
+      ErrorCodes.AUDIO_INVALID_TYPE,
       `Unsupported audio file "${file.name}". Only mp3/wav are allowed.`,
     );
   }
