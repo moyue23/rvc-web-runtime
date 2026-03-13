@@ -37,6 +37,8 @@ export interface RuntimeContext {
   sampleRate?: number;
   // ONNX model bytes used for inference.
   onnxBuffer?: ArrayBuffer;
+  // Parsed model metadata when available (e.g. from `.pth` conversion).
+  modelMetaData?: RuntimeModelMetaData;
   // Content features from stage A.
   hiddenStates?: Float32Array;
   // Fundamental frequency sequence from stage B.
@@ -47,4 +49,13 @@ export interface RuntimeContext {
   outputWav?: Blob;
   // Human-readable error summary for UI display.
   errorMessage?: string;
+}
+
+/**
+ * Model metadata stored in the runtime context for pipeline decisions and UI state.
+ */
+export interface RuntimeModelMetaData {
+  sampleRate: number;
+  version: string;
+  useF0: boolean;
 }

@@ -41,8 +41,9 @@ export async function runPipeline(
     ctx.sampleRate = sampleRate;
 
     updateState(PIPELINE_STEPS[1].state, PIPELINE_STEPS[1].progress);
-    const { onnxBuffer } = await prepareModel(files.model);
+    const { onnxBuffer, metaData } = await prepareModel(files.model);
     ctx.onnxBuffer = onnxBuffer;
+    ctx.modelMetaData = metaData;
 
     updateState(PIPELINE_STEPS[2].state, PIPELINE_STEPS[2].progress);
     // Placeholder: feature extraction should be replaced with Hubert output.
