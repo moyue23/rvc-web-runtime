@@ -5,10 +5,7 @@ import type { AudioData } from "./types";
 /**
  * Resamples PCM data to 16kHz for feature-extraction model compatibility.
  */
-export function resampleTo16k(
-  data: Float32Array,
-  originalRate: number,
-): AudioData {
+export function resampleTo16k(data: Float32Array, originalRate: number): AudioData {
   const TARGET_RATE = 16000;
 
   if (!Number.isFinite(originalRate) || originalRate <= 0) {
