@@ -1,7 +1,10 @@
 import type { EngineState, RuntimeContext } from "../types/runtime/runtime";
 import type { PipelineFiles, PipelineCallbacks } from "../types/contracts/pipeline";
 import { prepareInputAudio } from "../audio";
+import { extractHubertFeatures } from "../feature";
 import { createSessionFromOnnxBuffer, prepareModel } from "../model";
+import { estimatePitch } from "../pitch";
+import { synthesizeVoice } from "../synth";
 
 interface PipelineStep {
   state: EngineState;
@@ -50,16 +53,16 @@ export async function runPipeline(
     ctx.backend = backend;
 
     updateState(PIPELINE_STEPS[2].state, PIPELINE_STEPS[2].progress);
-    // Placeholder: feature extraction should be replaced with Hubert output.
-    ctx.hiddenStates = ctx.inputAudio;
+    const features = await extractHubertFeatures(audio);
+    ctx.hiddenStates = features.hiddenStates;
 
     updateState(PIPELINE_STEPS[3].state, PIPELINE_STEPS[3].progress);
-    // Placeholder: one fake F0 value per 512 samples.
-    ctx.f0 = buildPlaceholderF0(audio.length);
+    const pitch = await estimatePitch(audio);
+    ctx.f0 = pitch.f0;
 
     updateState(PIPELINE_STEPS[4].state, PIPELINE_STEPS[4].progress);
-    // Placeholder: synthesis currently passes through the source audio.
-    ctx.outputAudio = audio;
+    const synthesized = await synthesizeVoice(session, features, pitch);
+    ctx.outputAudio = synthesized.audio;
 
     updateState(PIPELINE_STEPS[5].state, PIPELINE_STEPS[5].progress);
     ctx.outputWav = encodeMonoPcmToWav(ctx.outputAudio, sampleRate);
@@ -69,17 +72,10 @@ export async function runPipeline(
   } catch (error) {
     ctx.state = "failed";
     ctx.progress = 100;
-    ctx.errorMessage = normalizeErrorMessage(error);
+    ctx.errorMessage = error instanceof Error ? error.message : "Unknown pipeline error";
     callbacks.onStateChange?.(ctx.state, ctx.progress, ctx);
     return ctx;
   }
-}
-
-function buildPlaceholderF0(sampleLength: number): Float32Array {
-  const frameCount = Math.max(1, Math.ceil(sampleLength / 512));
-  const f0 = new Float32Array(frameCount);
-  f0.fill(220);
-  return f0;
 }
 
 function encodeMonoPcmToWav(audio: Float32Array, sampleRate: number): Blob {
@@ -120,16 +116,4 @@ function writeAscii(view: DataView, offset: number, text: string): void {
   for (let i = 0; i < text.length; i += 1) {
     view.setUint8(offset + i, text.charCodeAt(i));
   }
-}
-
-function normalizeErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  if (typeof error === "string") {
-    return error;
-  }
-
-  return "Unknown pipeline error";
 }
