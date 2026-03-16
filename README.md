@@ -23,19 +23,20 @@ RVC-Web-Runtime is a specialized runtime engine focused on delivering industry-s
 ```text
 rvc-web-runtime/
 ├── src/
-│ ├── engine/ # Core inference engine (UI-agnostic)
-│ │ ├── pipeline/ # Task orchestration and state machine
-│ │ ├── audio/ # Audio preprocessing (Decode/Resample)
-│ │ ├── model/ # Model parsing and format adaptation
-│ │ ├── feature/ # HuBERT feature extraction stage
-│ │ ├── pitch/ # RMVPE pitch estimation stage
-│ │ ├── synth/ # RVC acoustic synthesis stage
-│ │ ├── post/ # Post-processing and export (Mix/Wav)
-│ │ └── infra/ # Compute backend scheduling (WebGPU/WASM)
-│ └── app/ # Demo application (Web Demo)
-│ ├── main.ts # Demo entry
-│ └── ui/ # UI components
-└── .github/ # CI/CD automation workflows
+│ ├── engine/                  # Core inference engine (UI-agnostic)
+│ │ ├── pipeline/              # Task orchestration and state machine
+│ │ ├── audio/                 # Audio preprocessing (Decode/Resample)
+│ │ ├── model/                 # Model parsing and format adaptation
+│ │ ├── feature/               # Stage A: ContentVec content feature extraction
+│ │ ├── retrieval/             # Optional: Feature retrieval (Index)
+│ │ ├── pitch/                 # Stage B: RMVPE pitch estimation
+│ │ ├── synth/                 # Stage C: RVC acoustic synthesis
+│ │ ├── post/                  # Post-processing and export (Mix/Wav)
+│ │ └── infra/                 # Compute backend scheduling (WebGPU/WASM)
+│ └── app/                     # Demo application (Web Demo)
+│   ├── main.ts                # Demo entry
+│   └── ui/                    # UI components
+└── .github/                   # CI/CD automation workflows
 ```
 
 ## 🛠 Tech Stack
