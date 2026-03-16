@@ -14,7 +14,7 @@ export interface SessionFactoryResult {
   backend: SessionBackend;
 }
 
-const DEFAULT_BACKENDS: readonly SessionBackend[] = ["webgpu", "wasm"];
+const DEFAULT_BACKENDS: readonly SessionBackend[] = ["wasm"];
 
 export async function createSessionFromOnnxBuffer(
   onnxBuffer: ArrayBuffer,

@@ -53,7 +53,9 @@ export async function runPipeline(
     ctx.backend = backend;
 
     updateState(PIPELINE_STEPS[2].state, PIPELINE_STEPS[2].progress);
-    const features = await extractHubertFeatures(audio);
+    const features = await extractHubertFeatures(audio, {
+      contentVec: files.contentVec,
+    });
     ctx.hiddenStates = features.hiddenStates;
 
     updateState(PIPELINE_STEPS[3].state, PIPELINE_STEPS[3].progress);

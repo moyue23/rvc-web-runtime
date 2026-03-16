@@ -6,6 +6,8 @@ import type { EngineState, RuntimeContext } from "../runtime/runtime";
 export type PipelineFiles = {
   model: File;
   audio: File;
+  contentVec: File;
+  index?: File;
 };
 
 /**

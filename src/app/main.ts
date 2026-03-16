@@ -23,16 +23,18 @@ function createDownload(blob: Blob): void {
 async function onRun(): Promise<void> {
   const modelInput = byId<HTMLInputElement>("model");
   const audioInput = byId<HTMLInputElement>("audio");
+  const contentVecInput = byId<HTMLInputElement>("contentVec");
 
   const model = modelInput.files?.[0];
   const audio = audioInput.files?.[0];
+  const contentVec = contentVecInput.files?.[0];
 
-  if (!model || !audio) {
-    setText("status", "Please select both model (.onnx/.pth) and audio files.");
+  if (!model || !audio || !contentVec) {
+    setText("status", "Please select model (.onnx/.pth), audio, and ContentVec files.");
     return;
   }
 
-  const files: PipelineFiles = { model, audio };
+  const files: PipelineFiles = { model, audio, contentVec };
   setText("status", "Running...");
 
   const ctx = await runPipeline(files, {
