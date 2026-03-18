@@ -24,17 +24,19 @@ async function onRun(): Promise<void> {
   const modelInput = byId<HTMLInputElement>("model");
   const audioInput = byId<HTMLInputElement>("audio");
   const contentVecInput = byId<HTMLInputElement>("contentVec");
+  const rmvpeInput = byId<HTMLInputElement>("rmvpe");
 
   const model = modelInput.files?.[0];
   const audio = audioInput.files?.[0];
   const contentVec = contentVecInput.files?.[0];
+  const rmvpe = rmvpeInput.files?.[0];
 
-  if (!model || !audio || !contentVec) {
-    setText("status", "Please select model (.onnx/.pth), audio, and ContentVec files.");
+  if (!model || !audio || !contentVec || !rmvpe) {
+    setText("status", "Please select all required files (model, audio, ContentVec, RMVPE).");
     return;
   }
 
-  const files: PipelineFiles = { model, audio, contentVec };
+  const files: PipelineFiles = { model, audio, contentVec, rmvpe };
   setText("status", "Running...");
 
   const ctx = await runPipeline(files, {

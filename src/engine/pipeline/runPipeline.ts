@@ -59,7 +59,7 @@ export async function runPipeline(
     ctx.hiddenStates = features.hiddenStates;
 
     updateState(PIPELINE_STEPS[3].state, PIPELINE_STEPS[3].progress);
-    const pitch = await estimatePitch(audio);
+    const pitch = await estimatePitch(audio, { rmvpe: files.rmvpe });
     ctx.f0 = pitch.f0;
 
     updateState(PIPELINE_STEPS[4].state, PIPELINE_STEPS[4].progress);

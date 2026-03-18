@@ -1,25 +1,26 @@
-export interface RmvpePitch {
-  f0: Float32Array;
-  frameCount: number;
-  hopSize: number;
+export type { RmvpePitch } from "./types";
+
+import { loadRmvpeModel } from "./model";
+import { runRmvpeInference } from "./inference";
+import type { RmvpePitch } from "./types";
+
+export interface EstimatePitchOptions {
+  rmvpe: File;
 }
 
-const DEFAULT_HOP_SIZE = 320;
-const DEFAULT_F0_HZ = 220;
-
 /**
- * Placeholder Stage B implementation.
- * Returns an RMVPE-like F0 track shape so synthesis input wiring can be
- * defined before real pitch extraction is integrated.
+ * Estimate pitch using RMVPE.
  */
-export async function estimatePitch(audio: Float32Array): Promise<RmvpePitch> {
-  const frameCount = Math.max(1, Math.ceil(audio.length / DEFAULT_HOP_SIZE));
-  const f0 = new Float32Array(frameCount);
-  f0.fill(DEFAULT_F0_HZ);
+export async function estimatePitch(
+  audio: Float32Array,
+  options: EstimatePitchOptions,
+): Promise<RmvpePitch> {
+  const session = await loadRmvpeModel(options.rmvpe);
+  const { f0, frameCount } = await runRmvpeInference(session, audio);
 
   return {
     f0,
     frameCount,
-    hopSize: DEFAULT_HOP_SIZE,
+    hopSize: 160,
   };
 }

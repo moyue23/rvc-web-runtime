@@ -7,6 +7,7 @@ export type PipelineFiles = {
   model: File;
   audio: File;
   contentVec: File;
+  rmvpe: File;
   index?: File;
 };
 
