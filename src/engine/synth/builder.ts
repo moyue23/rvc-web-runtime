@@ -5,8 +5,15 @@ import { RvcError } from "../errors/RvcError";
 import { ErrorCodes } from "../errors/errorCodes";
 import type { SynthesisFeeds } from "./types";
 
+// Pitch quantization constants from RVC official
+const F0_MIN = 50;
+const F0_MAX = 1100;
+const F0_MEL_MIN = 1127 * Math.log(1 + F0_MIN / 700);
+const F0_MEL_MAX = 1127 * Math.log(1 + F0_MAX / 700);
+
 /**
  * Build all input tensors for the synthesis model.
+ * Matches RVC ONNX inference: hubert, length, pitch, pitchf, sid, rnd
  */
 export function buildSynthesisFeeds(
   features: HubertFeatures,
@@ -21,6 +28,7 @@ export function buildSynthesisFeeds(
       pitch: buildPitchTensor(pitch.f0, frameCount),
       nsff0: buildNsff0Tensor(pitch.f0, frameCount),
       sid: buildSpeakerTensor(speakerId),
+      rnd: buildRndTensor(frameCount),
     };
   } catch (cause) {
     throw new RvcError(
@@ -69,9 +77,42 @@ function trimPitchFrames(f0: Float32Array, frameCount: number): Float32Array {
 function buildQuantizedPitch(f0: Float32Array, frameCount: number): BigInt64Array {
   const values = new BigInt64Array(frameCount);
 
-  for (let i = 0; i < frameCount; i += 1) {
-    values[i] = BigInt(Math.max(1, Math.round(f0[i] ?? 1)));
+  for (let i = 0; i < frameCount; i++) {
+    const f0Hz = f0[i] ?? 0;
+    let quantized: number;
+
+    if (f0Hz <= 0) {
+      // Unvoiced frame -> 1 (minimum valid value)
+      quantized = 1;
+    } else {
+      // Hz to mel scale
+      const f0Mel = 1127 * Math.log(1 + f0Hz / 700);
+      // Normalize to 1-255 range
+      quantized = (f0Mel - F0_MEL_MIN) * 254 / (F0_MEL_MAX - F0_MEL_MIN) + 1;
+      // Clamp
+      quantized = Math.max(1, Math.min(255, quantized));
+    }
+
+    values[i] = BigInt(Math.round(quantized));
   }
 
   return values;
+}
+
+/** Build random noise tensor for GAN synthesis. Shape: [1, 192, frameCount] */
+function buildRndTensor(frameCount: number): ort.Tensor {
+  const size = 1 * 192 * frameCount;
+  const data = new Float32Array(size);
+
+  // Standard normal distribution (Box-Muller or simple approximation)
+  for (let i = 0; i < size; i++) {
+    // Simple approximation: (sum of 12 uniform - 6) for standard normal
+    let sum = 0;
+    for (let j = 0; j < 12; j++) {
+      sum += Math.random();
+    }
+    data[i] = sum - 6;
+  }
+
+  return new ort.Tensor("float32", data, [1, 192, frameCount]);
 }

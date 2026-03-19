@@ -312,43 +312,77 @@ export async function runRmvpeInference(
   audio: Float32Array,
 ): Promise<{ f0: Float32Array; frameCount: number }> {
   try {
-    // Compute mel spectrogram
-    const melSpec = computeMelSpectrogram(audio);
-    const { nMels, hopLength, threshold } = RMVPE_PARAMS;
+    const { hopLength, threshold } = RMVPE_PARAMS;
     const numFrames = Math.ceil(audio.length / hopLength);
 
-    // Pad to multiple of 32 for model
-    const paddedMelSpec = padMelSpectrogram(melSpec, nMels);
-    const paddedFrames = paddedMelSpec.length / nMels;
+    // Get input name - adapt to model
+    const inputName = session.inputNames[0] ?? "mel";
 
-    // RMVPE expects input shape [1, nMels, nFrames]
-    const melTensor = new ort.Tensor("float32", paddedMelSpec, [1, nMels, paddedFrames]);
-    const results = await session.run({ mel: melTensor });
+    let inputTensor: ort.Tensor;
 
-    // Get output (360-dim salience map, not direct F0)
-    const outputName = session.outputNames[0] ?? "hidden";
-    const salienceTensor = results[outputName] as ort.Tensor;
-    const salienceData = salienceTensor.data as Float32Array;
-
-    // Verify output dimensions
-    if (salienceTensor.dims.length !== 3 || salienceTensor.dims[1] !== RMVPE_PARAMS.nClass) {
-      throw new Error(
-        `Unexpected RMVPE output shape: [${salienceTensor.dims.join(", ")}], ` +
-          `expected [batch, ${RMVPE_PARAMS.nClass}, frames]`,
-      );
+    if (inputName === "waveform") {
+      // Direct waveform input: [batch, samples]
+      inputTensor = new ort.Tensor("float32", audio, [1, audio.length]);
+    } else {
+      // Mel spectrogram input: [batch, nMels, nFrames]
+      const { nMels } = RMVPE_PARAMS;
+      const melSpec = computeMelSpectrogram(audio);
+      const paddedMelSpec = padMelSpectrogram(melSpec, nMels);
+      const paddedFrames = paddedMelSpec.length / nMels;
+      inputTensor = new ort.Tensor("float32", paddedMelSpec, [1, nMels, paddedFrames]);
     }
 
-    const outputFrames = salienceTensor.dims[2];
+    const feeds: Record<string, ort.Tensor> = {};
+    feeds[inputName] = inputTensor;
 
-    // Decode salience to F0
-    const f0All = decodeSalienceToF0(salienceData, outputFrames, threshold);
+    // Add optional inputs if model expects them
+    for (const name of session.inputNames) {
+      if (name === inputName) continue; // Skip main input
 
-    // Trim to original frame count and clamp to valid range
-    const f0 = new Float32Array(numFrames);
-    for (let i = 0; i < numFrames; i++) {
-      const hz = i < f0All.length ? f0All[i] : 0;
-      // Clamp to valid F0 range for singing (50-1100 Hz)
-      f0[i] = hz >= 50 && hz <= 1100 ? hz : 0;
+      if (name === "threshold") {
+        feeds.threshold = new ort.Tensor("float32", new Float32Array([threshold]));
+      } else if (name === "sr" || name === "sample_rate") {
+        feeds[name] = new ort.Tensor("int64", new BigInt64Array([16000n]));
+      }
+    }
+
+    const results = await session.run(feeds);
+
+    // Get output
+    const outputName = session.outputNames[0] ?? "hidden";
+    const outputTensor = results[outputName] as ort.Tensor;
+
+    let f0: Float32Array;
+
+    if (outputTensor.dims.length === 2) {
+      // Direct F0 output: [batch, nFrames]
+      const outputFrames = outputTensor.dims[1];
+      const data = outputTensor.data as Float32Array;
+      f0 = new Float32Array(numFrames);
+      for (let i = 0; i < numFrames; i++) {
+        const hz = i < outputFrames ? data[i] : 0;
+        // Clamp to valid F0 range
+        f0[i] = hz >= 50 && hz <= 1100 ? hz : 0;
+      }
+    } else if (outputTensor.dims.length === 3 && outputTensor.dims[1] === RMVPE_PARAMS.nClass) {
+      // Salience map output: [batch, nClass, frames]
+      const salienceData = outputTensor.data as Float32Array;
+      const outputFrames = outputTensor.dims[2];
+
+      // Decode salience to F0
+      const f0All = decodeSalienceToF0(salienceData, outputFrames, threshold);
+
+      // Trim to original frame count and clamp to valid range
+      f0 = new Float32Array(numFrames);
+      for (let i = 0; i < numFrames; i++) {
+        const hz = i < f0All.length ? f0All[i] : 0;
+        f0[i] = hz >= 50 && hz <= 1100 ? hz : 0;
+      }
+    } else {
+      throw new Error(
+        `Unexpected RMVPE output shape: [${outputTensor.dims.join(", ")}], ` +
+          `expected [batch, frames] or [batch, ${RMVPE_PARAMS.nClass}, frames]`,
+      );
     }
 
     return { f0, frameCount: numFrames };

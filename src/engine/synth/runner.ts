@@ -8,7 +8,15 @@ export async function runInference(
   feeds: SynthesisFeeds,
 ): Promise<ort.InferenceSession.OnnxValueMapType> {
   try {
-    return await session.run(feeds);
+    // Filter feeds to only include inputs the model expects
+    const filteredFeeds: Record<string, ort.Tensor> = {};
+    for (const name of session.inputNames) {
+      if (name in feeds) {
+        filteredFeeds[name] = feeds[name];
+      }
+    }
+
+    return await session.run(filteredFeeds);
   } catch (cause) {
     throw new RvcError(
       ErrorCodes.SYNTH_INFERENCE_FAILED,

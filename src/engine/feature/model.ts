@@ -20,10 +20,12 @@ export async function loadContentVecModel(
 
 async function createSession(arrayBuffer: ArrayBuffer): Promise<ort.InferenceSession> {
   try {
-    return await ort.InferenceSession.create(arrayBuffer, {
+    const session = await ort.InferenceSession.create(arrayBuffer, {
       executionProviders: ["wasm"],
       graphOptimizationLevel: "all",
     });
+
+    return session;
   } catch (cause) {
     throw new RvcError(
       ErrorCodes.FEATURE_MODEL_LOAD_FAILED,

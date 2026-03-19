@@ -64,16 +64,27 @@ export async function runPipeline(
 
     updateState(PIPELINE_STEPS[4].state, PIPELINE_STEPS[4].progress);
     const synthesized = await synthesizeVoice(session, features, pitch);
+
+    // RVC outputs at model's target sample rate (usually 48kHz)
+    // We keep it as-is (matching official RVC behavior)
     ctx.outputAudio = synthesized.audio;
+    const outputSampleRate = synthesized.sampleRate ?? 48000;
 
     updateState(PIPELINE_STEPS[5].state, PIPELINE_STEPS[5].progress);
-    ctx.outputWav = encodeMonoPcmToWav(ctx.outputAudio, sampleRate);
+    ctx.outputWav = encodeMonoPcmToWav(ctx.outputAudio, outputSampleRate);
 
     updateState("success", 100);
     return ctx;
   } catch (error) {
     ctx.state = "failed";
     ctx.progress = 100;
+
+    // Log full error details to console for debugging
+    console.error("[Pipeline] Error:", error);
+    if (error instanceof Error && "cause" in error) {
+      console.error("[Pipeline] Caused by:", (error as { cause?: unknown }).cause);
+    }
+
     ctx.errorMessage = error instanceof Error ? error.message : "Unknown pipeline error";
     callbacks.onStateChange?.(ctx.state, ctx.progress, ctx);
     return ctx;

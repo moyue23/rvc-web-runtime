@@ -18,6 +18,7 @@ export async function synthesizeVoice(
   const frameCount = computeFrameCount(features, pitch, options.maxFrames);
   const speakerId = options.speakerId ?? 0;
   const feeds = buildSynthesisFeeds(features, pitch, frameCount, speakerId);
+
   const outputs = await runInference(session, feeds);
   return parseSynthesisOutput(outputs);
 }

@@ -12,20 +12,15 @@ export interface ExtractHubertFeaturesOptions {
   onModelProgress?: ModelLoadProgressCallback;
 }
 
+/**
+ * Extract ContentVec features from audio (Stage A).
+ * Applies layer normalization and 2x upsampling to match RVC pipeline.
+ */
 export async function extractHubertFeatures(
   audio: Float32Array,
   options: ExtractHubertFeaturesOptions,
 ): Promise<HubertFeatures> {
-  const processed = preprocessForContentVec(audio);
+  const processed = preprocessForContentVec(audio, { normalize: true });
   const session = await loadContentVecModel(options.contentVec, options.onModelProgress);
-  const { hiddenStates, frameCount, featureSize } = await runContentVecInference(
-    session,
-    processed,
-  );
-
-  return {
-    hiddenStates,
-    frameCount,
-    featureSize,
-  };
+  return await runContentVecInference(session, processed);
 }

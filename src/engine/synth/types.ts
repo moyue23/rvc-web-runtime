@@ -16,5 +16,6 @@ export interface SynthesisFeeds {
   pitch: ort.Tensor;
   nsff0: ort.Tensor;
   sid: ort.Tensor;
+  rnd: ort.Tensor;
   [key: string]: ort.Tensor;
 }
