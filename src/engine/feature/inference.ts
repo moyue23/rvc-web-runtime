@@ -23,13 +23,6 @@ export async function runContentVecInference(
     // Build feeds based on model's expected inputs
     const feeds: Record<string, ort.Tensor> = {};
 
-    // Temporary: limit audio length to prevent OOM
-    // TODO: implement proper chunking for long audio
-    const MAX_SAMPLES = 16000 * 30; // 30 seconds at 16kHz
-    if (audio.length > MAX_SAMPLES) {
-      audio = audio.slice(0, MAX_SAMPLES);
-    }
-
     if (inputNames.length === 1 && inputNames[0] === "source") {
       // MoeSS format: [batch, 1, samples]
       feeds.source = new ort.Tensor("float32", audio, [1, 1, audio.length]);
@@ -39,11 +32,10 @@ export async function runContentVecInference(
         if (name === "source") {
           feeds[name] = new ort.Tensor("float32", audio, [1, audio.length]);
         } else if (name === "padding_mask") {
-          feeds[name] = new ort.Tensor(
-            "bool",
-            new Uint8Array(audio.length).fill(0),
-            [1, audio.length],
-          );
+          feeds[name] = new ort.Tensor("bool", new Uint8Array(audio.length).fill(0), [
+            1,
+            audio.length,
+          ]);
         } else if (name === "output_layer") {
           feeds[name] = new ort.Tensor("int64", new BigInt64Array([12n]), [1]);
         }
@@ -67,12 +59,7 @@ export async function runContentVecInference(
         featureSize = dim1;
         frameCount = dim2;
         // Transpose from [batch, featureSize, frameCount] to [batch, frameCount, featureSize]
-        features = transposeFeatures(
-          output.data as Float32Array,
-          batch,
-          featureSize,
-          frameCount,
-        );
+        features = transposeFeatures(output.data as Float32Array, batch, featureSize, frameCount);
       } else {
         // Already [batch, frameCount, featureSize]
         frameCount = dim1;

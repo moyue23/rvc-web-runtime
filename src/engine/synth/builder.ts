@@ -88,7 +88,7 @@ function buildQuantizedPitch(f0: Float32Array, frameCount: number): BigInt64Arra
       // Hz to mel scale
       const f0Mel = 1127 * Math.log(1 + f0Hz / 700);
       // Normalize to 1-255 range
-      quantized = (f0Mel - F0_MEL_MIN) * 254 / (F0_MEL_MAX - F0_MEL_MIN) + 1;
+      quantized = ((f0Mel - F0_MEL_MIN) * 254) / (F0_MEL_MAX - F0_MEL_MIN) + 1;
       // Clamp
       quantized = Math.max(1, Math.min(255, quantized));
     }

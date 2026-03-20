@@ -1,6 +1,8 @@
 import type { EngineState, RuntimeContext } from "../types/runtime/runtime";
 import type { PipelineFiles, PipelineCallbacks } from "../types/contracts/pipeline";
+import * as ort from "onnxruntime-web";
 import { prepareInputAudio } from "../audio";
+import { processAudioInChunks, type AudioChunkingConfig } from "../chunking";
 import { extractHubertFeatures } from "../feature";
 import { createSessionFromOnnxBuffer, prepareModel } from "../model";
 import { estimatePitch } from "../pitch";
@@ -48,30 +50,70 @@ export async function runPipeline(
     ctx.onnxBuffer = onnxBuffer;
     ctx.modelMetaData = metaData;
 
-    const { session, backend } = await createSessionFromOnnxBuffer(onnxBuffer);
-    ctx.modelSession = session;
-    ctx.backend = backend;
+    // Pre-load all models once for reuse
+    const [rvcSession, contentVecBuffer, rmvpeBuffer] = await Promise.all([
+      createSessionFromOnnxBuffer(onnxBuffer).then((r) => r.session),
+      files.contentVec.arrayBuffer(),
+      files.rmvpe.arrayBuffer(),
+    ]);
 
+    // Create sessions for feature and pitch models
+    const [contentVecSession, rmvpeSession] = await Promise.all([
+      ort.InferenceSession.create(contentVecBuffer, {
+        executionProviders: ["wasm"],
+        graphOptimizationLevel: "all",
+      }),
+      ort.InferenceSession.create(rmvpeBuffer, {
+        executionProviders: ["wasm"],
+        graphOptimizationLevel: "all",
+      }),
+    ]);
+
+    ctx.modelSession = rvcSession;
+    ctx.backend = "wasm";
+
+    // Process audio with chunking (A->B->C per chunk)
     updateState(PIPELINE_STEPS[2].state, PIPELINE_STEPS[2].progress);
-    const features = await extractHubertFeatures(audio, {
-      contentVec: files.contentVec,
-    });
-    ctx.hiddenStates = features.hiddenStates;
 
-    updateState(PIPELINE_STEPS[3].state, PIPELINE_STEPS[3].progress);
-    const pitch = await estimatePitch(audio, { rmvpe: files.rmvpe });
-    ctx.f0 = pitch.f0;
+    const chunkingConfig: AudioChunkingConfig = {
+      chunkDuration: 20, // 20 seconds per chunk
+      padDuration: 0.5, // 0.5s mirror padding on each side (RVC default)
+      inputSampleRate: 16000,
+      outputSampleRate: 48000,
+    };
 
-    updateState(PIPELINE_STEPS[4].state, PIPELINE_STEPS[4].progress);
-    const synthesized = await synthesizeVoice(session, features, pitch);
+    const outputAudio = await processAudioInChunks(
+      audio,
+      async (chunk) => {
+        // Stage A: Feature Extraction (ContentVec)
+        const features = await extractHubertFeatures(chunk.data, {
+          contentVec: contentVecSession,
+        });
+
+        // Stage B: Pitch Estimation (RMVPE)
+        const pitch = await estimatePitch(chunk.data, {
+          rmvpe: rmvpeSession,
+        });
+
+        // Stage C: Voice Synthesis (RVC)
+        const synthesized = await synthesizeVoice(rvcSession, features, pitch);
+
+        return synthesized.audio;
+      },
+      chunkingConfig,
+      (current, total) => {
+        const chunkProgress = 50 + Math.floor((current / total) * 42);
+        updateState("voice_synthesis", chunkProgress);
+      },
+    );
 
     // RVC outputs at model's target sample rate (usually 48kHz)
-    // We keep it as-is (matching official RVC behavior)
-    ctx.outputAudio = synthesized.audio;
-    const outputSampleRate = synthesized.sampleRate ?? 48000;
+    ctx.outputAudio = outputAudio;
+    ctx.hiddenStates = new Float32Array(0); // Not stored for chunked processing
+    ctx.f0 = new Float32Array(0); // Not stored for chunked processing
 
     updateState(PIPELINE_STEPS[5].state, PIPELINE_STEPS[5].progress);
-    ctx.outputWav = encodeMonoPcmToWav(ctx.outputAudio, outputSampleRate);
+    ctx.outputWav = encodeMonoPcmToWav(ctx.outputAudio, 48000);
 
     updateState("success", 100);
     return ctx;

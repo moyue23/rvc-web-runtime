@@ -14,11 +14,7 @@ export function resampleTo16k(data: Float32Array, originalRate: number): AudioDa
 /**
  * Resamples PCM data to target sample rate using linear interpolation.
  */
-function resampleAudio(
-  data: Float32Array,
-  originalRate: number,
-  targetRate: number,
-): Float32Array {
+function resampleAudio(data: Float32Array, originalRate: number, targetRate: number): Float32Array {
   if (!Number.isFinite(originalRate) || originalRate <= 0) {
     throw new RvcError(
       ErrorCodes.AUDIO_RESAMPLE_INVALID_RATE,
