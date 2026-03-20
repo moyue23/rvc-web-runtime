@@ -53,25 +53,25 @@ RVC-Web-Runtime is now in **Alpha** stage. It is functional for basic use cases 
 
 ### ✅ Completed
 
-| Feature | Status | Description |
-|---------|--------|-------------|
-| **Pipeline Architecture** | ✅ Stable | 6-stage state machine (Input → Model → Feature → Pitch → Synthesis → Output) |
-| **ContentVec Feature Extraction** | ✅ Working | Layer 12, 768-dim features (RVC v2 compatible) |
-| **RMVPE Pitch Estimation** | ✅ Working | 160Hz hop, direct waveform input |
-| **RVC Synthesis** | ✅ Working | ONNX inference with feature + pitch fusion |
-| **Long Audio Support** | ✅ Working | 20s chunks with mirror padding, tested up to 4+ minutes |
-| **Audio Chunking** | ✅ Working | Automatic merging for short final chunks (<10s) |
-| **Model Format** | ✅ ONNX/PTH | `.onnx` supported, `.pth` auto-converted (via rvc-onnx-web) |
+| Feature                           | Status      | Description                                                                  |
+| --------------------------------- | ----------- | ---------------------------------------------------------------------------- |
+| **Pipeline Architecture**         | ✅ Stable   | 6-stage state machine (Input → Model → Feature → Pitch → Synthesis → Output) |
+| **ContentVec Feature Extraction** | ✅ Working  | Layer 12, 768-dim features (RVC v2 compatible)                               |
+| **RMVPE Pitch Estimation**        | ✅ Working  | 160Hz hop, direct waveform input                                             |
+| **RVC Synthesis**                 | ✅ Working  | ONNX inference with feature + pitch fusion                                   |
+| **Long Audio Support**            | ✅ Working  | 20s chunks with mirror padding, tested up to 4+ minutes                      |
+| **Audio Chunking**                | ✅ Working  | Automatic merging for short final chunks (<10s)                              |
+| **Model Format**                  | ✅ ONNX/PTH | `.onnx` supported, `.pth` auto-converted (via rvc-onnx-web)                  |
 
 ### 🔄 In Progress / Planned
 
-| Feature | Status | Description |
-|---------|--------|-------------|
+| Feature                       | Status     | Description                                                  |
+| ----------------------------- | ---------- | ------------------------------------------------------------ |
 | **Feature Retrieval (faiss)** | 🚧 Planned | Index-based feature replacement for better timbre similarity |
-| **WebGPU Acceleration** | 🚧 Planned | Currently WASM backend; WebGPU for faster inference |
-| **Volume Envelope Matching** | 🚧 Planned | RMS mix rate for natural volume transitions |
-| **UV (Unvoiced) Handling** | 🚧 Planned | Better handling of breath and silence |
-| **Real-time Inference** | 🚧 Planned | Streaming mode for live voice conversion |
+| **WebGPU Acceleration**       | 🚧 Planned | Currently WASM backend; WebGPU for faster inference          |
+| **Volume Envelope Matching**  | 🚧 Planned | RMS mix rate for natural volume transitions                  |
+| **UV (Unvoiced) Handling**    | 🚧 Planned | Better handling of breath and silence                        |
+| **Real-time Inference**       | 🚧 Planned | Streaming mode for live voice conversion                     |
 
 ### ⚠️ Known Limitations
 
