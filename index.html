@@ -6,23 +6,42 @@
     <title>RVC-Web-Runtime Console</title>
   </head>
   <body>
-    <div id="app">
-      <label for="model">Model (.onnx, .pth)</label>
-      <input id="model" type="file" accept=".onnx,.pth" />
+    <header class="top-nav">
+      <div class="nav-brand">RVC-Web-Runtime</div>
+      <nav class="nav-links">
+        <a href="#" class="nav-link active" data-tab="demo">Demo</a>
+        <a href="#" class="nav-link" data-tab="docs">API Docs</a>
+      </nav>
+    </header>
 
-      <label for="audio">Source Audio (.mp3, .wav)</label>
-      <input id="audio" type="file" accept=".mp3,.wav,audio/mpeg,audio/wav" />
+    <main class="main-content">
+      <div id="tab-demo" class="tab-content active">
+        <div class="panel">
+          <label for="model">Model (.onnx, .pth)</label>
+          <input id="model" type="file" accept=".onnx,.pth" />
 
-      <label for="contentVec">ContentVec Model (.onnx)</label>
-      <input id="contentVec" type="file" accept=".onnx" required />
+          <label for="audio">Source Audio (.mp3, .wav)</label>
+          <input id="audio" type="file" accept=".mp3,.wav,audio/mpeg,audio/wav" />
 
-      <label for="rmvpe">RMVPE Model (.onnx)</label>
-      <input id="rmvpe" type="file" accept=".onnx" required />
+          <label for="contentVec">ContentVec Model (.onnx)</label>
+          <input id="contentVec" type="file" accept=".onnx" required />
 
-      <button id="run" type="button">Run</button>
-      <p id="status"></p>
-      <a id="download"></a>
-    </div>
+          <label for="rmvpe">RMVPE Model (.onnx)</label>
+          <input id="rmvpe" type="file" accept=".onnx" required />
+
+          <button id="run" type="button">Run</button>
+          <p id="status"></p>
+          <a id="download"></a>
+        </div>
+      </div>
+
+      <div id="tab-docs" class="tab-content">
+        <div class="docs-container" id="docs-content">
+          <p>Loading documentation...</p>
+        </div>
+      </div>
+    </main>
+
     <noscript>Please enable JavaScript to run this app.</noscript>
     <script type="module" src="/src/app/main.ts"></script>
   </body>

@@ -24,6 +24,9 @@
     "vite-plugin-static-copy": "^3.2.0"
   },
   "dependencies": {
+    "@types/dompurify": "^3.0.5",
+    "dompurify": "^3.3.3",
+    "marked": "^15.0.12",
     "onnxruntime-web": "^1.24.2",
     "rvc-onnx-web": "^1.0.0"
   }

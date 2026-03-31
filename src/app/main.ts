@@ -1,5 +1,8 @@
 import "./styles/main.css";
-import { runPipeline, type PipelineFiles } from "../engine";
+import { prepareInputAudio } from "../engine/audio";
+import { runPipelineInWorker } from "../engine/worker/client";
+import { marked } from "marked";
+import DOMPurify from "dompurify";
 
 function byId<T extends HTMLElement>(id: string): T {
   const el = document.getElementById(id);
@@ -36,23 +39,98 @@ async function onRun(): Promise<void> {
     return;
   }
 
-  const files: PipelineFiles = { model, audio, contentVec, rmvpe };
+  setText("status", "Decoding audio...");
+  const { audio: audioData, sampleRate: audioSampleRate } = await prepareInputAudio(audio);
+
+  const modelFiles = { model, contentVec, rmvpe };
   setText("status", "Running...");
 
-  const ctx = await runPipeline(files, {
-    onStateChange(state, progress) {
-      setText("status", `${state} (${progress}%)`);
-    },
-  });
+  const startTime = performance.now();
 
-  if (ctx.state === "success" && ctx.outputWav) {
-    createDownload(ctx.outputWav);
-    setText("status", "Done.");
-    return;
+  try {
+    const ctx = await runPipelineInWorker(modelFiles, audioData, audioSampleRate, {
+      onStateChange(state, progress) {
+        setText("status", `${state} (${progress}%)`);
+      },
+    });
+
+    const endTime = performance.now();
+    const duration = ((endTime - startTime) / 1000).toFixed(1);
+
+    if (ctx.state === "success" && ctx.outputWav) {
+      createDownload(ctx.outputWav);
+      setText("status", `Done! (${duration}s)`);
+      return;
+    }
+
+    setText("status", `Failed: ${ctx.errorMessage ?? "Unknown error"}`);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    setText("status", `Error: ${message}`);
   }
-
-  setText("status", `Failed: ${ctx.errorMessage ?? "Unknown error"}`);
 }
+
+async function loadDocs(): Promise<void> {
+  const docsContainer = byId<HTMLDivElement>("docs-content");
+  try {
+    const lang = navigator.language.toLowerCase();
+    const docPath = lang.startsWith("zh") ? "/docs/api.zh-CN.md" : "/docs/api.md";
+    const response = await fetch(docPath);
+    if (!response.ok) {
+      throw new Error(`Failed to load docs: ${response.status}`);
+    }
+    const markdown = await response.text();
+    const html = await marked.parse(markdown);
+    docsContainer.innerHTML = DOMPurify.sanitize(html);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    docsContainer.innerHTML = `<p style="color: red">Failed to load documentation: ${message}</p>`;
+  }
+}
+
+function initNavigation(): void {
+  const navLinks = document.querySelectorAll(".nav-link");
+  const tabContents = document.querySelectorAll(".tab-content");
+
+  navLinks.forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      const targetTab = link.getAttribute("data-tab");
+      if (!targetTab) return;
+
+      navLinks.forEach((l) => l.classList.remove("active"));
+      link.classList.add("active");
+
+      tabContents.forEach((content) => {
+        content.classList.remove("active");
+      });
+      const targetContent = document.getElementById(`tab-${targetTab}`);
+      if (targetContent) {
+        targetContent.classList.add("active");
+      }
+    });
+  });
+}
+
+function setupFileInputs(): void {
+  const fileInputs = document.querySelectorAll('input[type="file"]');
+  fileInputs.forEach((input) => {
+    const fileInput = input as HTMLInputElement;
+    const label = fileInput.previousElementSibling as HTMLLabelElement;
+    if (!label) return;
+
+    const originalText = label.textContent ?? "";
+
+    fileInput.addEventListener("change", () => {
+      const file = fileInput.files?.[0];
+      label.textContent = file ? `${originalText}: ${file.name}` : originalText;
+    });
+  });
+}
+
+initNavigation();
+setupFileInputs();
+void loadDocs();
 
 byId<HTMLButtonElement>("run").addEventListener("click", () => {
   void onRun();

@@ -7,39 +7,107 @@
   --line: #d8dfeb;
   --accent: #0b6bcb;
   --accent-hover: #0a5cad;
+  --nav-height: 56px;
 }
 
 * {
   box-sizing: border-box;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 20px;
   font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-  background:
-    radial-gradient(circle at top left, #ffffff 0%, transparent 45%),
-    radial-gradient(circle at bottom right, #e9f0ff 0%, transparent 35%), var(--bg);
+  background: var(--bg);
   color: var(--text);
 }
 
-#app {
-  width: min(100%, 480px);
-  display: grid;
-  gap: 10px;
-  padding: 20px;
+/* Top Navigation Bar */
+.top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--nav-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 5%);
+  z-index: 100;
+}
+
+.nav-brand {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.nav-links {
+  display: flex;
+  gap: 8px;
+}
+
+.nav-link {
+  padding: 8px 16px;
+  text-decoration: none;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.nav-link:hover {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.nav-link.active {
+  color: var(--accent);
+  background: #e8f1fc;
+}
+
+/* Main Content Area */
+.main-content {
+  padding-top: var(--nav-height);
+  min-height: 100vh;
+}
+
+.tab-content {
+  display: none;
+  padding: 32px 24px;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* Panel Card */
+.panel {
+  max-width: 480px;
+  margin: 80px auto;
+  padding: 24px;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--panel);
   box-shadow: 0 8px 24px rgb(0 0 0 / 8%);
 }
 
+/* Form Elements */
 label {
+  display: block;
   font-size: 14px;
   font-weight: 600;
+  margin-bottom: 6px;
 }
 
 input[type="file"] {
@@ -48,10 +116,26 @@ input[type="file"] {
   border-radius: 10px;
   padding: 8px;
   background: #fcfdff;
+  color: transparent;
+  margin-bottom: 16px;
+}
+
+input[type="file"]::file-selector-button {
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  margin-right: 12px;
+  background: var(--line);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+input[type="file"]::file-selector-button:hover {
+  background: #c8d4e0;
 }
 
 button {
-  margin-top: 6px;
   border: none;
   border-radius: 10px;
   padding: 10px 14px;
@@ -66,9 +150,14 @@ button:hover {
   background: var(--accent-hover);
 }
 
+#run {
+  width: 100%;
+  margin-top: 8px;
+}
+
 #status {
   min-height: 20px;
-  margin: 2px 0 0;
+  margin: 12px 0 0;
   color: var(--muted);
   font-size: 13px;
 }
@@ -79,8 +168,133 @@ button:hover {
   color: var(--accent);
   text-decoration: none;
   font-weight: 600;
+  margin-top: 8px;
 }
 
 #download:hover {
+  text-decoration: underline;
+}
+
+/* Docs Container - Wide layout for documentation */
+.docs-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 40px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 8%);
+}
+
+.docs-container h1 {
+  margin: 0 0 24px;
+  font-size: 28px;
+  color: var(--text);
+}
+
+.docs-container h2 {
+  margin: 32px 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+  font-size: 22px;
+  color: var(--text);
+}
+
+.docs-container h3 {
+  margin: 24px 0 12px;
+  font-size: 18px;
+  color: var(--text);
+}
+
+.docs-container h4 {
+  margin: 20px 0 10px;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.docs-container p {
+  margin: 12px 0;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+.docs-container pre {
+  margin: 16px 0;
+  padding: 16px 20px;
+  background: #f5f7fa;
+  border-radius: 10px;
+  overflow-x: auto;
+}
+
+.docs-container code {
+  font-family: "SF Mono", "Fira Code", "JetBrains Mono", monospace;
+  font-size: 13px;
+  color: #334;
+}
+
+.docs-container pre code {
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.docs-container ul,
+.docs-container ol {
+  margin: 12px 0;
+  padding-left: 24px;
+}
+
+.docs-container li {
+  margin: 8px 0;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.docs-container blockquote {
+  margin: 16px 0;
+  padding: 12px 16px;
+  border-left: 4px solid var(--accent);
+  background: #f0f6fc;
+  border-radius: 0 8px 8px 0;
+}
+
+.docs-container blockquote p {
+  margin: 0;
+}
+
+.docs-container hr {
+  margin: 32px 0;
+  border: none;
+  border-top: 1px solid var(--line);
+}
+
+.docs-container table {
+  width: 100%;
+  margin: 16px 0;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.docs-container th,
+.docs-container td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+}
+
+.docs-container th {
+  font-weight: 600;
+  background: #f5f7fa;
+}
+
+.docs-container tr:hover {
+  background: #fafbfc;
+}
+
+.docs-container a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.docs-container a:hover {
   text-decoration: underline;
 }
