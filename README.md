@@ -47,6 +47,16 @@ rvc-web-runtime/
 - **Acceleration**: WebGPU / WebAssembly
 - **Build Tool**: Vite
 
+## 🚀 Usage
+
+```bash
+npm rvc-web
+```
+
+## 📖 API Documentation
+
+See [API Documentation](./docs/api.md).
+
 ## 🚧 Status: Alpha
 
 RVC-Web-Runtime is now in **Alpha** stage. It is functional for basic use cases but has known limitations.
@@ -63,15 +73,20 @@ RVC-Web-Runtime is now in **Alpha** stage. It is functional for basic use cases 
 | **Audio Chunking**                | ✅ Working  | Automatic merging for short final chunks (<10s)                              |
 | **Model Format**                  | ✅ ONNX/PTH | `.onnx` supported, `.pth` auto-converted (via rvc-onnx-web)                  |
 
-### 🔄 In Progress / Planned
+### 🔄 In Progress
 
-| Feature                       | Status     | Description                                                  |
-| ----------------------------- | ---------- | ------------------------------------------------------------ |
-| **Feature Retrieval (faiss)** | 🚧 Planned | Index-based feature replacement for better timbre similarity |
-| **WebGPU Acceleration**       | 🚧 Planned | Currently WASM backend; WebGPU for faster inference          |
-| **Volume Envelope Matching**  | 🚧 Planned | RMS mix rate for natural volume transitions                  |
-| **UV (Unvoiced) Handling**    | 🚧 Planned | Better handling of breath and silence                        |
-| **Real-time Inference**       | 🚧 Planned | Streaming mode for live voice conversion                     |
+| Feature                     | Status         |
+| --------------------------- | -------------- |
+| **Feature Retrieval**       | 🚧 In Progress |
+
+### 📋 Planned
+
+| Feature                      | Status     |
+| ---------------------------- | ---------- |
+| **Volume Envelope Mix**      | 🚧 Planned |
+| **Voiceless Protection**     | 🚧 Planned |
+| **F0 Median Filtering**      | 🚧 Planned |
+| **WebGPU Acceleration**      | 🚧 Planned |
 
 ### ⚠️ Known Limitations
 
@@ -85,10 +100,10 @@ RVC-Web-Runtime is now in **Alpha** stage. It is functional for basic use cases 
 
 You need three ONNX models to run the pipeline:
 
-1. **ContentVec** (Feature Extractor): `vec-768-layer-12.onnx` (~378MB)
+1. **ContentVec** (Feature Extractor): `vec-768-layer-12.onnx`
    - Download: [MoeSS-SUBModel/vec-768-layer-12.onnx](https://huggingface.co/NaruseMioShirakana/MoeSS-SUBModel/resolve/main/vec-768-layer-12.onnx)
 
-2. **RMVPE** (Pitch Estimator): `RMVPE.onnx` (~180MB)
+2. **RMVPE** (Pitch Estimator): `RMVPE.onnx`
    - Download: [MoeSS-SUBModel/RMVPE.onnx](https://huggingface.co/NaruseMioShirakana/MoeSS-SUBModel/resolve/main/RMVPE.onnx)
 
 3. **RVC Model** (Synthesizer): Your trained `.onnx` or `.pth` model
