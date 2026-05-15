@@ -23,9 +23,15 @@ const PIPELINE_STEPS: ReadonlyArray<PipelineStep> = [
   { state: "post_processing", progress: 92 },
 ];
 
+interface PreDecodedAudio {
+  data: Float32Array;
+  sampleRate: number;
+}
+
 export async function runPipeline(
   files: PipelineFiles,
   callbacks: PipelineCallbacks = {},
+  preDecodedAudio?: PreDecodedAudio,
 ): Promise<RuntimeContext> {
   const ctx: RuntimeContext = { state: "idle", progress: 0 };
 
@@ -37,7 +43,19 @@ export async function runPipeline(
 
   try {
     updateState(PIPELINE_STEPS[0].state, PIPELINE_STEPS[0].progress);
-    const { audio, sampleRate } = await prepareInputAudio(files.audio);
+
+    let audio: Float32Array;
+    let sampleRate: number;
+
+    if (preDecodedAudio) {
+      audio = preDecodedAudio.data;
+      sampleRate = preDecodedAudio.sampleRate;
+    } else {
+      const result = await prepareInputAudio(files.audio);
+      audio = result.audio;
+      sampleRate = result.sampleRate;
+    }
+
     ctx.inputAudio = audio;
     ctx.sampleRate = sampleRate;
 
@@ -46,6 +64,7 @@ export async function runPipeline(
     ctx.onnxBuffer = onnxBuffer;
     ctx.modelMetaData = metaData;
 
+    // Pre-load all models once for reuse
     const [rvcSession, contentVecBuffer, rmvpeBuffer] = await Promise.all([
       createSessionFromOnnxBuffer(onnxBuffer).then((r) => r.session),
       files.contentVec.arrayBuffer(),

@@ -1,6 +1,4 @@
 import "./styles/main.css";
-import { prepareInputAudio } from "../engine/audio";
-import { runPipelineInWorker } from "../engine/worker/client";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 
@@ -8,66 +6,6 @@ function byId<T extends HTMLElement>(id: string): T {
   const el = document.getElementById(id);
   if (!el) throw new Error(`Missing element: ${id}`);
   return el as T;
-}
-
-function setText(id: string, text: string): void {
-  byId<HTMLElement>(id).textContent = text;
-}
-
-function createDownload(blob: Blob): void {
-  const url = URL.createObjectURL(blob);
-  const a = byId<HTMLAnchorElement>("download");
-  a.href = url;
-  a.download = "cover.wav";
-  a.style.display = "inline-block";
-  a.textContent = "Download WAV";
-}
-
-async function onRun(): Promise<void> {
-  const modelInput = byId<HTMLInputElement>("model");
-  const audioInput = byId<HTMLInputElement>("audio");
-  const contentVecInput = byId<HTMLInputElement>("contentVec");
-  const rmvpeInput = byId<HTMLInputElement>("rmvpe");
-
-  const model = modelInput.files?.[0];
-  const audio = audioInput.files?.[0];
-  const contentVec = contentVecInput.files?.[0];
-  const rmvpe = rmvpeInput.files?.[0];
-
-  if (!model || !audio || !contentVec || !rmvpe) {
-    setText("status", "Please select all required files (model, audio, ContentVec, RMVPE).");
-    return;
-  }
-
-  setText("status", "Decoding audio...");
-  const { audio: audioData, sampleRate: audioSampleRate } = await prepareInputAudio(audio);
-
-  const modelFiles = { model, contentVec, rmvpe };
-  setText("status", "Running...");
-
-  const startTime = performance.now();
-
-  try {
-    const ctx = await runPipelineInWorker(modelFiles, audioData, audioSampleRate, {
-      onStateChange(state, progress) {
-        setText("status", `${state} (${progress}%)`);
-      },
-    });
-
-    const endTime = performance.now();
-    const duration = ((endTime - startTime) / 1000).toFixed(1);
-
-    if (ctx.state === "success" && ctx.outputWav) {
-      createDownload(ctx.outputWav);
-      setText("status", `Done! (${duration}s)`);
-      return;
-    }
-
-    setText("status", `Failed: ${ctx.errorMessage ?? "Unknown error"}`);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    setText("status", `Error: ${message}`);
-  }
 }
 
 async function loadDocs(): Promise<void> {
@@ -132,6 +70,7 @@ initNavigation();
 setupFileInputs();
 void loadDocs();
 
-byId<HTMLButtonElement>("run").addEventListener("click", () => {
-  void onRun();
-});
+// TODO: Add back after worker commit
+// byId<HTMLButtonElement>("run").addEventListener("click", () => {
+//   void onRun();
+// });
