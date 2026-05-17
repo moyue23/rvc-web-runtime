@@ -26,8 +26,12 @@ const result = await runPipelineInWorker(
   audioData, // Float32Array，必须 16kHz
   16000, // 采样率
   {
-    onStateChange: (state, progress) => {
-      console.log(`${state}: ${progress}%`);
+    onEvent: (event) => {
+      if (event.type === "stage") {
+        console.log(`阶段: ${event.stage}`);
+      } else if (event.type === "chunk") {
+        console.log(`分段 ${event.current}/${event.total}`);
+      }
     },
   },
   { timeout: 300000 }, // 可选：5分钟超时
@@ -97,19 +101,36 @@ type PipelineFiles = {
 
 ---
 
+### PipelineEvent
+
+流水线发出的事件。
+
+```typescript
+type PipelineEvent =
+  | { type: "stage"; stage: EngineState }   // 进入新阶段
+  | { type: "chunk"; current: number; total: number }; // 分段处理完成
+```
+
+| 事件类型 | 字段                    | 说明                          |
+| -------- | ----------------------- | ----------------------------- |
+| `stage`  | `stage: EngineState`    | 流水线进入新阶段              |
+| `chunk`  | `current`, `total`      | 第 `current` / `total` 段完成 |
+
+---
+
 ### PipelineCallbacks
 
-流水线状态回调。
+流水线事件回调。
 
 ```typescript
 type PipelineCallbacks = {
-  onStateChange?: (state: EngineState, progress: number, context: RuntimeContext) => void;
+  onEvent?: (event: PipelineEvent) => void;
 };
 ```
 
-| 回调            | 说明                                           |
-| --------------- | ---------------------------------------------- |
-| `onStateChange` | 状态或进度变化时触发，`progress` 范围 [0, 100] |
+| 回调      | 说明                                 |
+| --------- | ------------------------------------ |
+| `onEvent` | 流水线阶段变化或分段完成时触发 |
 
 ---
 
@@ -131,9 +152,8 @@ interface WorkerClientOptions {
 
 ```typescript
 interface RuntimeContext {
-  // 状态与进度
+  // 状态
   state: EngineState; // 当前阶段
-  progress: number; // 进度百分比 [0, 100]
 
   // 输入数据
   inputAudio?: Float32Array; // 解码后的源音频
@@ -289,8 +309,12 @@ async function convertVoice(
     audioData,
     sampleRate,
     {
-      onStateChange: (state, progress) => {
-        updateUI(state, progress);
+      onEvent: (event) => {
+        if (event.type === "stage") {
+          updateUI(event.stage);
+        } else if (event.type === "chunk") {
+          updateProgress(event.current, event.total);
+        }
       },
     },
     { timeout: 600000 }, // 10分钟超时（长歌曲）

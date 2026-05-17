@@ -26,8 +26,12 @@ const result = await runPipelineInWorker(
   audioData, // Float32Array, must be 16kHz
   16000, // Sample rate
   {
-    onStateChange: (state, progress) => {
-      console.log(`${state}: ${progress}%`);
+    onEvent: (event) => {
+      if (event.type === "stage") {
+        console.log(`Stage: ${event.stage}`);
+      } else if (event.type === "chunk") {
+        console.log(`Chunk ${event.current}/${event.total}`);
+      }
     },
   },
   { timeout: 300000 }, // Optional: 5 minute timeout
@@ -97,19 +101,36 @@ type PipelineFiles = {
 
 ---
 
+### PipelineEvent
+
+Events emitted by the pipeline.
+
+```typescript
+type PipelineEvent =
+  | { type: "stage"; stage: EngineState }   // Pipeline entered a new stage
+  | { type: "chunk"; current: number; total: number }; // Chunk completed
+```
+
+| Event Type | Fields                    | Description                          |
+| ---------- | ------------------------- | ------------------------------------ |
+| `stage`    | `stage: EngineState`      | Pipeline entered a new stage         |
+| `chunk`    | `current`, `total`        | Chunk `current` of `total` completed |
+
+---
+
 ### PipelineCallbacks
 
-Pipeline state callbacks.
+Pipeline event callbacks.
 
 ```typescript
 type PipelineCallbacks = {
-  onStateChange?: (state: EngineState, progress: number, context: RuntimeContext) => void;
+  onEvent?: (event: PipelineEvent) => void;
 };
 ```
 
-| Callback        | Description                                                         |
-| --------------- | ------------------------------------------------------------------- |
-| `onStateChange` | Triggered when state or progress changes, `progress` range [0, 100] |
+| Callback  | Description                                              |
+| --------- | -------------------------------------------------------- |
+| `onEvent` | Triggered when pipeline stage changes or chunk completes |
 
 ---
 
@@ -131,9 +152,8 @@ Runtime context, passed through the entire inference process.
 
 ```typescript
 interface RuntimeContext {
-  // State and progress
+  // State
   state: EngineState; // Current stage
-  progress: number; // Progress percentage [0, 100]
 
   // Input data
   inputAudio?: Float32Array; // Decoded source audio
@@ -289,8 +309,12 @@ async function convertVoice(
     audioData,
     sampleRate,
     {
-      onStateChange: (state, progress) => {
-        updateUI(state, progress);
+      onEvent: (event) => {
+        if (event.type === "stage") {
+          updateUI(event.stage);
+        } else if (event.type === "chunk") {
+          updateProgress(event.current, event.total);
+        }
       },
     },
     { timeout: 600000 }, // 10 minute timeout (long songs)
