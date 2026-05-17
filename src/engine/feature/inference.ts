@@ -54,17 +54,29 @@ export async function runContentVecInference(
     if (output.dims.length === 3) {
       const [batch, dim1, dim2] = output.dims;
 
-      // Detect layout: if dim1 <= 768, it's likely [batch, featureSize, frameCount]
-      if (dim1 <= 768 && dim2 > dim1) {
+      // MoeSS ContentVec ONNX exports as [batch, featureSize, frameCount].
+      // Common feature dims: 768 (v2), 256 (v1). Frame count varies with audio length.
+      if (dim1 === 768 || dim1 === 256) {
         featureSize = dim1;
         frameCount = dim2;
         // Transpose from [batch, featureSize, frameCount] to [batch, frameCount, featureSize]
         features = transposeFeatures(output.data as Float32Array, batch, featureSize, frameCount);
-      } else {
+      } else if (dim2 === 768 || dim2 === 256) {
         // Already [batch, frameCount, featureSize]
         frameCount = dim1;
         featureSize = dim2;
         features = output.data as Float32Array;
+      } else {
+        // Fallback: assume larger dim is frame count (safer heuristic)
+        if (dim1 > dim2) {
+          frameCount = dim1;
+          featureSize = dim2;
+          features = output.data as Float32Array;
+        } else {
+          featureSize = dim1;
+          frameCount = dim2;
+          features = transposeFeatures(output.data as Float32Array, batch, featureSize, frameCount);
+        }
       }
     } else {
       throw new Error(`Unexpected output shape: ${output.dims.join(", ")}`);
