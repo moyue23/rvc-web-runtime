@@ -75,18 +75,18 @@ RVC-Web-Runtime is now in **Alpha** stage. It is functional for basic use cases 
 
 ### 🔄 In Progress
 
-| Feature                     | Status         |
-| --------------------------- | -------------- |
-| **Feature Retrieval**       | 🚧 In Progress |
+| Feature               | Status         |
+| --------------------- | -------------- |
+| **Feature Retrieval** | 🚧 In Progress |
 
 ### 📋 Planned
 
-| Feature                      | Status     |
-| ---------------------------- | ---------- |
-| **Volume Envelope Mix**      | 🚧 Planned |
-| **Voiceless Protection**     | 🚧 Planned |
-| **F0 Median Filtering**      | 🚧 Planned |
-| **WebGPU Acceleration**      | 🚧 Planned |
+| Feature                  | Status     |
+| ------------------------ | ---------- |
+| **Volume Envelope Mix**  | 🚧 Planned |
+| **Voiceless Protection** | 🚧 Planned |
+| **F0 Median Filtering**  | 🚧 Planned |
+| **WebGPU Acceleration**  | 🚧 Planned |
 
 ### ⚠️ Known Limitations
 
