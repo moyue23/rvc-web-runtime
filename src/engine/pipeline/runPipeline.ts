@@ -9,18 +9,13 @@ import { estimatePitch } from "../pitch";
 import { synthesizeVoice } from "../synth";
 import { encodeMonoPcmToWav } from "../post";
 
-interface PipelineStep {
-  state: EngineState;
-  progress: number;
-}
-
-const PIPELINE_STEPS: ReadonlyArray<PipelineStep> = [
-  { state: "input_preparation", progress: 10 },
-  { state: "model_parsing", progress: 30 },
-  { state: "feature_extraction", progress: 50 },
-  { state: "pitch_estimation", progress: 65 },
-  { state: "voice_synthesis", progress: 80 },
-  { state: "post_processing", progress: 92 },
+const PIPELINE_STAGES: ReadonlyArray<EngineState> = [
+  "input_preparation",
+  "model_parsing",
+  "feature_extraction",
+  "pitch_estimation",
+  "voice_synthesis",
+  "post_processing",
 ];
 
 interface PreDecodedAudio {
@@ -33,16 +28,15 @@ export async function runPipeline(
   callbacks: PipelineCallbacks = {},
   preDecodedAudio?: PreDecodedAudio,
 ): Promise<RuntimeContext> {
-  const ctx: RuntimeContext = { state: "idle", progress: 0 };
+  const ctx: RuntimeContext = { state: "idle" };
 
-  const updateState = (state: EngineState, progress: number) => {
+  const emitStage = (state: EngineState) => {
     ctx.state = state;
-    ctx.progress = progress;
-    callbacks.onStateChange?.(state, progress, ctx);
+    callbacks.onEvent?.({ type: "stage", stage: state });
   };
 
   try {
-    updateState(PIPELINE_STEPS[0].state, PIPELINE_STEPS[0].progress);
+    emitStage(PIPELINE_STAGES[0]);
 
     let audio: Float32Array;
     let sampleRate: number;
@@ -59,7 +53,7 @@ export async function runPipeline(
     ctx.inputAudio = audio;
     ctx.sampleRate = sampleRate;
 
-    updateState(PIPELINE_STEPS[1].state, PIPELINE_STEPS[1].progress);
+    emitStage(PIPELINE_STAGES[1]);
     const { onnxBuffer, metaData } = await prepareModel(files.model);
     ctx.onnxBuffer = onnxBuffer;
     ctx.modelMetaData = metaData;
@@ -85,7 +79,7 @@ export async function runPipeline(
     ctx.modelSession = rvcSession;
     ctx.backend = "wasm";
 
-    updateState(PIPELINE_STEPS[2].state, PIPELINE_STEPS[2].progress);
+    emitStage(PIPELINE_STAGES[2]);
 
     const chunkingConfig: AudioChunkingConfig = {
       chunkDuration: 20,
@@ -110,8 +104,7 @@ export async function runPipeline(
       },
       chunkingConfig,
       (current, total) => {
-        const chunkProgress = 50 + Math.floor((current / total) * 42);
-        updateState("voice_synthesis", chunkProgress);
+        callbacks.onEvent?.({ type: "chunk", current, total });
       },
     );
 
@@ -119,19 +112,18 @@ export async function runPipeline(
     ctx.hiddenStates = new Float32Array(0);
     ctx.f0 = new Float32Array(0);
 
-    updateState(PIPELINE_STEPS[5].state, PIPELINE_STEPS[5].progress);
+    emitStage(PIPELINE_STAGES[5]);
     ctx.outputWav = encodeMonoPcmToWav(ctx.outputAudio, { sampleRate: 48000 });
 
-    updateState("success", 100);
+    emitStage("success");
     return ctx;
   } catch (error) {
     ctx.state = "failed";
-    ctx.progress = 100;
     ctx.errorMessage = error instanceof Error ? error.message : "Unknown pipeline error";
     if (error instanceof Error) {
       ctx.errorCode = (error as { code?: string }).code ?? "UNKNOWN_ERROR";
     }
-    callbacks.onStateChange?.(ctx.state, ctx.progress, ctx);
+    callbacks.onEvent?.({ type: "stage", stage: "failed" });
     return ctx;
   }
 }

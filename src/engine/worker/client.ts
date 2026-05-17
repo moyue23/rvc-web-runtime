@@ -40,9 +40,8 @@ export async function runPipelineInWorker(
       const { type } = event.data;
 
       switch (type) {
-        case "PROGRESS": {
-          const { state, progress } = event.data;
-          callbacks.onStateChange?.(state, progress, { state, progress });
+        case "EVENT": {
+          callbacks.onEvent?.(event.data.event);
           break;
         }
 

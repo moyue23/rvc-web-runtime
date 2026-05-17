@@ -9,7 +9,7 @@ import { ErrorCodes, type ErrorCode } from "../errors/errorCodes";
  * Worker entry point for running the RVC pipeline off the main thread.
  *
  * Handles messages from the main thread, executes the pipeline, and streams
- * progress updates back via postMessage.
+ * stage/chunk events back via postMessage.
  *
  * Audio decoding happens on the main thread and the decoded PCM is passed in.
  */
@@ -70,8 +70,8 @@ self.onmessage = async (event: MessageEvent<WorkerRequestMessage>) => {
     consoleProxy.log("[Worker] Starting pipeline...");
 
     const callbacks: PipelineCallbacks = {
-      onStateChange: (state, progress) => {
-        post({ type: "PROGRESS", state, progress });
+      onEvent: (event) => {
+        post({ type: "EVENT", event });
       },
     };
 

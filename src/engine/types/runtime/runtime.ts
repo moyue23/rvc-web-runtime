@@ -2,7 +2,7 @@ import type * as ort from "onnxruntime-web";
 
 /**
  * EngineState defines the current stage of one pipeline run.
- * Use it for progress UI, logs, and error localization.
+ * Use it for state UI, logs, and error localization.
  */
 export type EngineState =
   // Waiting for input; no work started yet.
@@ -31,8 +31,6 @@ export type EngineState =
 export interface RuntimeContext {
   // Current pipeline stage.
   state: EngineState;
-  // Task progress in percentage [0, 100].
-  progress: number;
   // Decoded source mono PCM data.
   inputAudio?: Float32Array;
   // Sample rate of inputAudio/outputAudio.

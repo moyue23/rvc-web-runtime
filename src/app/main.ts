@@ -3,6 +3,20 @@ import { prepareInputAudio } from "../engine/audio";
 import { runPipelineInWorker } from "../engine/worker/client";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
+import type { EngineState } from "../engine/types/runtime/runtime";
+
+/** Demo-only mapping: stage name → approximate progress for UI display. */
+const STAGE_PROGRESS: Record<EngineState, number> = {
+  idle: 0,
+  input_preparation: 5,
+  model_parsing: 15,
+  feature_extraction: 25,
+  pitch_estimation: 35,
+  voice_synthesis: 40,
+  post_processing: 95,
+  success: 100,
+  failed: 100,
+};
 
 const CONTENTVEC_URL =
   "https://huggingface.co/NaruseMioShirakana/MoeSS-SUBModel/resolve/main/vec-768-layer-12.onnx";
@@ -146,8 +160,13 @@ async function onRun(): Promise<void> {
 
   try {
     const ctx = await runPipelineInWorker(modelFiles, audioData, audioSampleRate, {
-      onStateChange(state: string, progress: number) {
-        setText("status", `${state} (${progress}%)`);
+      onEvent(event) {
+        if (event.type === "stage") {
+          const progress = STAGE_PROGRESS[event.stage];
+          setText("status", `${event.stage} (${progress}%)`);
+        } else if (event.type === "chunk") {
+          setText("status", `voice_synthesis — chunk ${event.current}/${event.total}`);
+        }
       },
     });
 

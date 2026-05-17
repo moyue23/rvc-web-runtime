@@ -1,4 +1,5 @@
-import type { EngineState, RuntimeContext } from "../types/runtime/runtime";
+import type { PipelineEvent } from "../types/contracts/pipeline";
+import type { RuntimeContext } from "../types/runtime/runtime";
 import type { ErrorCode } from "../errors/errorCodes";
 
 /**
@@ -30,7 +31,7 @@ export type WorkerRequestMessage =
  * Messages sent from Worker to main thread.
  */
 export type WorkerResponseMessage =
-  | { type: "PROGRESS"; state: EngineState; progress: number }
+  | { type: "EVENT"; event: PipelineEvent }
   | { type: "COMPLETE"; result: RuntimeContext }
   | { type: "ERROR"; code: ErrorCode; error: string }
   | { type: "LOG"; level: "log" | "error" | "warn"; message: string };
