@@ -29,6 +29,19 @@
           <label for="rmvpe" id="rmvpe-label">RMVPE Model (.onnx)</label>
           <input id="rmvpe" type="file" accept=".onnx" />
 
+          <div class="control-row">
+            <div class="control-group">
+              <label for="speakerId">Speaker ID</label>
+              <input id="speakerId" type="number" value="0" min="0" />
+            </div>
+            <div class="control-group">
+              <label for="pitchShift"
+                >Pitch Shift <span class="shift-value" id="pitchShift-value">0</span></label
+              >
+              <input id="pitchShift" type="range" min="-12" max="12" value="0" step="1" />
+            </div>
+          </div>
+
           <button id="run" type="button">Run</button>
           <p id="status"></p>
           <a id="download"></a>

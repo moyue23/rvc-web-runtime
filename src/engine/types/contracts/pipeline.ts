@@ -24,3 +24,15 @@ export type PipelineEvent =
 export type PipelineCallbacks = {
   onEvent?: (event: PipelineEvent) => void;
 };
+
+/**
+ * Pipeline runtime options.
+ */
+export interface PipelineOptions {
+  speakerId?: number;
+  chunkDuration?: number;
+  padDuration?: number;
+  inputSampleRate?: number;
+  outputSampleRate?: number;
+  pitchShift?: number;
+}

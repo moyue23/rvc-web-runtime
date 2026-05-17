@@ -8,6 +8,7 @@ export interface SynthesisResult {
 export interface SynthesisOptions {
   speakerId?: number;
   maxFrames?: number;
+  pitchShift?: number;
 }
 
 export interface SynthesisFeeds {

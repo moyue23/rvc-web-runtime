@@ -107,14 +107,14 @@ Events emitted by the pipeline.
 
 ```typescript
 type PipelineEvent =
-  | { type: "stage"; stage: EngineState }   // Pipeline entered a new stage
+  | { type: "stage"; stage: EngineState } // Pipeline entered a new stage
   | { type: "chunk"; current: number; total: number }; // Chunk completed
 ```
 
-| Event Type | Fields                    | Description                          |
-| ---------- | ------------------------- | ------------------------------------ |
-| `stage`    | `stage: EngineState`      | Pipeline entered a new stage         |
-| `chunk`    | `current`, `total`        | Chunk `current` of `total` completed |
+| Event Type | Fields               | Description                          |
+| ---------- | -------------------- | ------------------------------------ |
+| `stage`    | `stage: EngineState` | Pipeline entered a new stage         |
+| `chunk`    | `current`, `total`   | Chunk `current` of `total` completed |
 
 ---
 

@@ -154,21 +154,31 @@ async function onRun(): Promise<void> {
   const { audio: audioData, sampleRate: audioSampleRate } = await prepareInputAudio(audio!);
 
   const modelFiles = { model: model!, contentVec: contentVec!, rmvpe: rmvpe! };
+
+  const speakerId = parseInt(byId<HTMLInputElement>("speakerId").value, 10) || 0;
+  const pitchShift = parseInt(byId<HTMLInputElement>("pitchShift").value, 10) || 0;
+
   setText("status", "Running...");
 
   const startTime = performance.now();
 
   try {
-    const ctx = await runPipelineInWorker(modelFiles, audioData, audioSampleRate, {
-      onEvent(event) {
-        if (event.type === "stage") {
-          const progress = STAGE_PROGRESS[event.stage];
-          setText("status", `${event.stage} (${progress}%)`);
-        } else if (event.type === "chunk") {
-          setText("status", `voice_synthesis — chunk ${event.current}/${event.total}`);
-        }
+    const ctx = await runPipelineInWorker(
+      modelFiles,
+      audioData,
+      audioSampleRate,
+      {
+        onEvent(event) {
+          if (event.type === "stage") {
+            const progress = STAGE_PROGRESS[event.stage];
+            setText("status", `${event.stage} (${progress}%)`);
+          } else if (event.type === "chunk") {
+            setText("status", `voice_synthesis — chunk ${event.current}/${event.total}`);
+          }
+        },
       },
-    });
+      { speakerId, pitchShift },
+    );
 
     const endTime = performance.now();
     const duration = ((endTime - startTime) / 1000).toFixed(1);
@@ -228,6 +238,14 @@ function initNavigation(): void {
   });
 }
 
+function setupPitchShiftSlider(): void {
+  const slider = byId<HTMLInputElement>("pitchShift");
+  const display = byId<HTMLSpanElement>("pitchShift-value");
+  slider.addEventListener("input", () => {
+    display.textContent = slider.value;
+  });
+}
+
 function setupFileInputs(): void {
   const fileInputs = document.querySelectorAll('input[type="file"]');
   fileInputs.forEach((input) => {
@@ -254,6 +272,7 @@ function setupFileInputs(): void {
 
 initNavigation();
 setupFileInputs();
+setupPitchShiftSlider();
 void loadDocs();
 void autoDownloadModels();
 

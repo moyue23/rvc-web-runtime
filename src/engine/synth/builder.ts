@@ -20,13 +20,15 @@ export function buildSynthesisFeeds(
   pitch: RmvpePitch,
   frameCount: number,
   speakerId: number,
+  pitchShift = 0,
 ): SynthesisFeeds {
   try {
+    const shiftedF0 = applyPitchShift(pitch.f0, pitchShift);
     return {
       phone: buildPhoneTensor(features, frameCount),
       phone_lengths: buildPhoneLengthsTensor(frameCount),
-      pitch: buildPitchTensor(pitch.f0, frameCount),
-      nsff0: buildNsff0Tensor(pitch.f0, frameCount),
+      pitch: buildPitchTensor(shiftedF0, frameCount),
+      nsff0: buildNsff0Tensor(shiftedF0, frameCount),
       sid: buildSpeakerTensor(speakerId),
       rnd: buildRndTensor(frameCount),
     };
@@ -37,6 +39,16 @@ export function buildSynthesisFeeds(
       cause,
     );
   }
+}
+
+function applyPitchShift(f0: Float32Array, semitones: number): Float32Array {
+  if (semitones === 0) return f0;
+  const factor = 2 ** (semitones / 12);
+  const shifted = new Float32Array(f0.length);
+  for (let i = 0; i < f0.length; i++) {
+    shifted[i] = f0[i] * factor;
+  }
+  return shifted;
 }
 
 function buildPhoneTensor(features: HubertFeatures, frameCount: number): ort.Tensor {

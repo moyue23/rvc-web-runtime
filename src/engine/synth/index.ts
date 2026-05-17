@@ -17,7 +17,8 @@ export async function synthesizeVoice(
 ): Promise<SynthesisResult> {
   const frameCount = computeFrameCount(features, pitch, options.maxFrames);
   const speakerId = options.speakerId ?? 0;
-  const feeds = buildSynthesisFeeds(features, pitch, frameCount, speakerId);
+  const pitchShift = options.pitchShift ?? 0;
+  const feeds = buildSynthesisFeeds(features, pitch, frameCount, speakerId, pitchShift);
 
   const outputs = await runInference(session, feeds);
   return parseSynthesisOutput(outputs);

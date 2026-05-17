@@ -1,9 +1,13 @@
 import type { WorkerResponseMessage } from "./types";
-import type { PipelineFiles, PipelineCallbacks } from "../types/contracts/pipeline";
+import type {
+  PipelineFiles,
+  PipelineCallbacks,
+  PipelineOptions,
+} from "../types/contracts/pipeline";
 import type { RuntimeContext } from "../types/runtime/runtime";
 import { RvcError } from "../errors/RvcError";
 
-export interface WorkerClientOptions {
+export interface WorkerClientOptions extends PipelineOptions {
   timeout?: number;
 }
 
@@ -17,7 +21,7 @@ export async function runPipelineInWorker(
   callbacks: PipelineCallbacks = {},
   options: WorkerClientOptions = {},
 ): Promise<RuntimeContext> {
-  const { timeout = 300000 } = options;
+  const { timeout = 300000, ...pipelineOptions } = options;
   const [modelBuf, contentVecBuf, rmvpeBuf, indexBuf] = await Promise.all([
     files.model.arrayBuffer(),
     files.contentVec.arrayBuffer(),
@@ -26,7 +30,6 @@ export async function runPipelineInWorker(
   ]);
 
   return new Promise((resolve, reject) => {
-    // Create worker using Vite's Worker constructor pattern
     const worker = new Worker(new URL("./inference.worker.ts", import.meta.url), {
       type: "module",
     });
@@ -92,6 +95,7 @@ export async function runPipelineInWorker(
         rmvpe: files.rmvpe.name,
         index: files.index?.name,
       },
+      options: pipelineOptions,
     });
   });
 }

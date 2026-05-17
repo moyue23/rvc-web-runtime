@@ -1,4 +1,4 @@
-import type { PipelineEvent } from "../types/contracts/pipeline";
+import type { PipelineEvent, PipelineOptions } from "../types/contracts/pipeline";
 import type { RuntimeContext } from "../types/runtime/runtime";
 import type { ErrorCode } from "../errors/errorCodes";
 
@@ -24,6 +24,7 @@ export type WorkerRequestMessage =
         rmvpe: string;
         index?: string;
       };
+      options: PipelineOptions;
     }
   | { type: "CANCEL" };
 

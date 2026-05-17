@@ -107,14 +107,14 @@ type PipelineFiles = {
 
 ```typescript
 type PipelineEvent =
-  | { type: "stage"; stage: EngineState }   // 进入新阶段
+  | { type: "stage"; stage: EngineState } // 进入新阶段
   | { type: "chunk"; current: number; total: number }; // 分段处理完成
 ```
 
-| 事件类型 | 字段                    | 说明                          |
-| -------- | ----------------------- | ----------------------------- |
-| `stage`  | `stage: EngineState`    | 流水线进入新阶段              |
-| `chunk`  | `current`, `total`      | 第 `current` / `total` 段完成 |
+| 事件类型 | 字段                 | 说明                          |
+| -------- | -------------------- | ----------------------------- |
+| `stage`  | `stage: EngineState` | 流水线进入新阶段              |
+| `chunk`  | `current`, `total`   | 第 `current` / `total` 段完成 |
 
 ---
 
@@ -128,8 +128,8 @@ type PipelineCallbacks = {
 };
 ```
 
-| 回调      | 说明                                 |
-| --------- | ------------------------------------ |
+| 回调      | 说明                           |
+| --------- | ------------------------------ |
 | `onEvent` | 流水线阶段变化或分段完成时触发 |
 
 ---

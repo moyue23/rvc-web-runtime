@@ -1,5 +1,9 @@
 import type { EngineState, RuntimeContext } from "../types/runtime/runtime";
-import type { PipelineFiles, PipelineCallbacks } from "../types/contracts/pipeline";
+import type {
+  PipelineFiles,
+  PipelineCallbacks,
+  PipelineOptions,
+} from "../types/contracts/pipeline";
 import * as ort from "onnxruntime-web";
 import { prepareInputAudio } from "../audio";
 import { processAudioInChunks, type AudioChunkingConfig } from "../chunking";
@@ -26,6 +30,7 @@ interface PreDecodedAudio {
 export async function runPipeline(
   files: PipelineFiles,
   callbacks: PipelineCallbacks = {},
+  options: PipelineOptions = {},
   preDecodedAudio?: PreDecodedAudio,
 ): Promise<RuntimeContext> {
   const ctx: RuntimeContext = { state: "idle" };
@@ -82,10 +87,10 @@ export async function runPipeline(
     emitStage(PIPELINE_STAGES[2]);
 
     const chunkingConfig: AudioChunkingConfig = {
-      chunkDuration: 20,
-      padDuration: 0.5,
-      inputSampleRate: 16000,
-      outputSampleRate: 48000,
+      chunkDuration: options.chunkDuration ?? 20,
+      padDuration: options.padDuration ?? 0.5,
+      inputSampleRate: options.inputSampleRate ?? 16000,
+      outputSampleRate: options.outputSampleRate ?? 48000,
     };
 
     const outputAudio = await processAudioInChunks(
@@ -99,7 +104,10 @@ export async function runPipeline(
           rmvpe: rmvpeSession,
         });
 
-        const synthesized = await synthesizeVoice(rvcSession, features, pitch);
+        const synthesized = await synthesizeVoice(rvcSession, features, pitch, {
+          speakerId: options.speakerId,
+          pitchShift: options.pitchShift,
+        });
         return synthesized.audio;
       },
       chunkingConfig,
@@ -113,7 +121,9 @@ export async function runPipeline(
     ctx.f0 = new Float32Array(0);
 
     emitStage(PIPELINE_STAGES[5]);
-    ctx.outputWav = encodeMonoPcmToWav(ctx.outputAudio, { sampleRate: 48000 });
+    ctx.outputWav = encodeMonoPcmToWav(ctx.outputAudio, {
+      sampleRate: options.outputSampleRate ?? 48000,
+    });
 
     emitStage("success");
     return ctx;

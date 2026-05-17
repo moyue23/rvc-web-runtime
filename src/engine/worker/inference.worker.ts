@@ -7,18 +7,12 @@ import { ErrorCodes, type ErrorCode } from "../errors/errorCodes";
 
 /**
  * Worker entry point for running the RVC pipeline off the main thread.
- *
- * Handles messages from the main thread, executes the pipeline, and streams
- * stage/chunk events back via postMessage.
- *
  * Audio decoding happens on the main thread and the decoded PCM is passed in.
  */
-
 const post = (message: WorkerResponseMessage) => {
   self.postMessage(message);
 };
 
-// Console proxy to forward logs to main thread
 const consoleProxy = {
   log: (...args: unknown[]) => {
     post({ type: "LOG", level: "log", message: args.join(" ") });
@@ -48,7 +42,7 @@ self.onmessage = async (event: MessageEvent<WorkerRequestMessage>) => {
     return;
   }
 
-  const { audio, files, fileNames } = event.data;
+  const { audio, files, fileNames, options } = event.data;
 
   try {
     // Reconstruct File objects for models (audio already decoded on main thread)
@@ -76,7 +70,7 @@ self.onmessage = async (event: MessageEvent<WorkerRequestMessage>) => {
     };
 
     // Pass pre-decoded audio to pipeline (AudioContext not available in worker)
-    const result: RuntimeContext = await runPipeline(pipelineFiles, callbacks, {
+    const result: RuntimeContext = await runPipeline(pipelineFiles, callbacks, options, {
       data: audio.data,
       sampleRate: audio.sampleRate,
     });
