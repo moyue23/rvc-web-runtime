@@ -83,6 +83,17 @@ self.onmessage = async (event: MessageEvent<WorkerRequestMessage>) => {
 
     // Extract serializable data for the response
     // Note: Some fields like modelSession cannot be transferred
+    // Check for pipeline failure (runPipeline catches internally and returns failed ctx)
+    if (result.state === "failed") {
+      const errorCode = (result.errorCode as ErrorCode) ?? ErrorCodes.WORKER_UNKNOWN_ERROR;
+      const errorMessage = result.errorMessage ?? "Pipeline failed";
+      consoleProxy.error("[Worker] Pipeline failed:", `[${errorCode}]`, errorMessage);
+      post({ type: "ERROR", code: errorCode, error: errorMessage });
+      return;
+    }
+
+    // Extract serializable data for the response
+    // Note: Some fields like modelSession cannot be transferred
     const serializableResult: RuntimeContext = {
       ...result,
       // Clear non-serializable session object

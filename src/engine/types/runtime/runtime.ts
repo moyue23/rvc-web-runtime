@@ -55,6 +55,8 @@ export interface RuntimeContext {
   outputWav?: Blob;
   // Human-readable error summary for UI display.
   errorMessage?: string;
+  /** Error code for programmatic handling when state is 'failed'. */
+  errorCode?: string;
 }
 
 /**

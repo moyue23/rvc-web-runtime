@@ -128,6 +128,9 @@ export async function runPipeline(
     ctx.state = "failed";
     ctx.progress = 100;
     ctx.errorMessage = error instanceof Error ? error.message : "Unknown pipeline error";
+    if (error instanceof Error) {
+      ctx.errorCode = (error as { code?: string }).code ?? "UNKNOWN_ERROR";
+    }
     callbacks.onStateChange?.(ctx.state, ctx.progress, ctx);
     return ctx;
   }

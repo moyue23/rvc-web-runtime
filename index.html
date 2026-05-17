@@ -23,11 +23,11 @@
           <label for="audio">Source Audio (.mp3, .wav)</label>
           <input id="audio" type="file" accept=".mp3,.wav,audio/mpeg,audio/wav" />
 
-          <label for="contentVec">ContentVec Model (.onnx)</label>
-          <input id="contentVec" type="file" accept=".onnx" required />
+          <label for="contentVec" id="contentVec-label">ContentVec Model (.onnx)</label>
+          <input id="contentVec" type="file" accept=".onnx" />
 
-          <label for="rmvpe">RMVPE Model (.onnx)</label>
-          <input id="rmvpe" type="file" accept=".onnx" required />
+          <label for="rmvpe" id="rmvpe-label">RMVPE Model (.onnx)</label>
+          <input id="rmvpe" type="file" accept=".onnx" />
 
           <button id="run" type="button">Run</button>
           <p id="status"></p>
