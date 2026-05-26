@@ -1,14 +1,14 @@
 {
   "name": "rvc-web-runtime-monorepo",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "description": "Monorepo for RVC-Web-Runtime - Browser-based RVC inference engine",
   "license": "MIT",
-  "author": "RVC-Web-Runtime Contributors",
+  "author": "moyue23 (https://github.com/moyue23)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/rvc-web-runtime.git"
+    "url": "https://github.com/moyue23/rvc-web-runtime.git"
   },
   "workspaces": [
     "packages/*"

@@ -1,6 +1,6 @@
 {
   "name": "rvc-web-runtime",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
   "description": "Browser-based RVC (Retrieval-based Voice Conversion) inference engine",
   "keywords": [
@@ -15,14 +15,14 @@
     "browser"
   ],
   "license": "MIT",
-  "author": "RVC-Web-Runtime Contributors",
+  "author": "moyue23 (https://github.com/moyue23)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/rvc-web-runtime.git"
+    "url": "https://github.com/moyue23/rvc-web-runtime.git"
   },
-  "homepage": "https://github.com/your-username/rvc-web-runtime#readme",
+  "homepage": "https://github.com/moyue23/rvc-web-runtime#readme",
   "bugs": {
-    "url": "https://github.com/your-username/rvc-web-runtime/issues"
+    "url": "https://github.com/moyue23/rvc-web-runtime/issues"
   },
   "main": "dist/index.js",
   "module": "dist/index.js",

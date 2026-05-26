@@ -20,24 +20,73 @@ RVC-Web-Runtime 是一个专用执行引擎，致力于在浏览器中实现业�
 
 ## 🏗 架构
 
-```
+```text
 rvc-web-runtime/
-├── src/
-│ ├── engine/                  # 核心推理引擎 (无 UI 依赖)
-│ │ ├── pipeline/              # 任务调度与状态机
-│ │ ├── audio/                 # 音频预处理 (Decode/Resample)
-│ │ ├── model/                 # 模型解析与格式适配
-│ │ ├── feature/               # Stage A: ContentVec 内容特征提取
-│ │ ├── chunking/              # 长音频分块与拼接（镜像填充）
-│ │ ├── retrieval/             # (可选) 特征检索
-│ │ ├── pitch/                 # Stage B: RMVPE 音高估计
-│ │ ├── synth/                 # Stage C: RVC 声学合成
-│ │ ├── post/                  # 后处理与导出 (Mix/Wav)
-│ │ └── infra/                 # 算力调度 (WebGPU/WASM 配置)
-│ └── app/                     # 演示应用 (Web Demo)
-│   ├── main.ts                # Demo 入口
-│   └── ui/                    # 交互组件
-└── .github/                   # CI/CD 自动化流水线
+├── packages/
+│   ├── engine/                        # npm 包：核心推理引擎 (UI 无关)
+│   │   └── src/
+│   │       ├── pipeline/              # 任务调度与状态机
+│   │       │   └── runPipeline.ts     # 主管道入口 (6 阶段)
+│   │       ├── audio/                 # 音频预处理 (解码/重采样)
+│   │       │   ├── decoder.ts         # 音频文件解码
+│   │       │   ├── resampler.ts       # 采样率转换
+│   │       │   ├── processor.ts       # 音频处理工具
+│   │       │   ├── loader.ts          # 音频文件加载
+│   │       │   └── types.ts           # 音频类型定义
+│   │       ├── model/                 # 模型加载与 ONNX 会话管理
+│   │       │   ├── sessionFactory.ts  # ONNX Runtime 会话创建
+│   │       │   ├── pthToOnnx.ts       # PyTorch → ONNX 自动转换
+│   │       │   ├── loader.ts          # 模型文件加载
+│   │       │   ├── resolver.ts        # 模型路径解析
+│   │       │   └── types.ts           # 模型类型定义
+│   │       ├── feature/               # 阶段 A: ContentVec 内容特征提取
+│   │       │   ├── index.ts           # 模块入口 (extractHubertFeatures)
+│   │       │   ├── inference.ts       # 特征推理
+│   │       │   ├── preprocess.ts      # ContentVec 音频预处理
+│   │       │   ├── model.ts           # ContentVec 模型加载
+│   │       │   └── types.ts           # 特征类型定义
+│   │       ├── pitch/                 # 阶段 B: RMVPE 音高估计
+│   │       │   ├── index.ts           # 模块入口 (estimatePitch)
+│   │       │   ├── inference.ts       # 音高推理
+│   │       │   ├── median-filter.ts   # F0 中值滤波 (音高平滑)
+│   │       │   ├── model.ts           # RMVPE 模型加载
+│   │       │   └── types.ts           # 音高类型定义
+│   │       ├── synth/                 # 阶段 C: RVC 声学合成
+│   │       │   ├── index.ts           # 模块入口 (synthesizeVoice)
+│   │       │   ├── runner.ts          # ONNX 推理执行
+│   │       │   ├── aligner.ts         # 特征-音高对齐
+│   │       │   ├── builder.ts         # ONNX 图构建
+│   │       │   ├── output.ts          # 输���后处理
+│   │       │   └── types.ts           # 合成类型定义
+│   │       ├── timbre/                # 声音音色管理
+│   │       │   ├── index.ts           # 模块入口 (createVoiceTimbre)
+│   │       │   └── types.ts           # 音色类型定义
+│   │       ├── chunking/              # 长音频切片与镜像填充
+│   │       │   ├── index.ts           # 模块入口 (分块工具)
+│   │       │   └── types.ts           # 分块类型定义
+│   │       ├── post/                  # 后处理 (WAV 编码)
+│   │       │   ├── index.ts           # 模块入口 (encodeMonoPcmToWav)
+│   │       │   ├── encoder.ts         # WAV 音频编码
+│   │       │   └── types.ts           # 后处理类型定义
+│   │       ├── worker/                # Web Worker 推理支持
+│   │       │   ├── index.ts           # Worker 模块入口
+│   │       │   ├── client.ts          # Worker 客户端接口
+│   │       │   ├── inference.worker.ts # Worker 实现
+│   │       │   └── types.ts           # Worker 类型定义
+│   │       ├── errors/                # 错误处理
+│   │       │   ├── errorCodes.ts      # 错误码常量
+│   │       │   └── RvcError.ts        # 自定义错误类
+│   │       └── types/                 # 共享 TypeScript 类型定义
+│   │           ├── runtime.ts         # RuntimeContext 与 EngineState
+│   │           └── pipeline.ts        # Pipeline API 契约
+│   └── app/                           # 演示应用 (不发布)
+│       └── src/
+│           ├── main.ts                # 演示入口
+│           └── styles/                # CSS 样式
+├── docs/                              # API 文档
+├── .github/                           # CI/CD 工作流
+├── package.json                       # Monorepo 根配置 (npm workspaces)
+└── tsconfig.json                      # 根 TypeScript 配置
 ```
 
 ## 🛠 技术栈
@@ -49,17 +98,39 @@ rvc-web-runtime/
 
 ## 🚀 使用方法
 
+### 作为 npm 包使用
+
 ```bash
-npm rvc-web
+npm install rvc-web-runtime
+```
+
+```typescript
+import { runPipeline } from 'rvc-web-runtime';
+
+// 详细用法请参考 API 文档
+```
+
+### 开发 / 演示
+
+```bash
+# 克隆仓库
+git clone https://github.com/moyue23/rvc-web-runtime.git
+cd rvc-web-runtime
+
+# 安装依赖
+npm install
+
+# 运行演示应用
+npm run dev
 ```
 
 ## 📖 API 文档
 
 详见 [API 文档](./docs/api.zh-CN.md)。
 
-## 🚧 状态：Alpha 测试版
+## 🚧 状态：稳定测试版
 
-RVC-Web-Runtime 目前处于 **Alpha** 阶段。基本功能可用，但存在一些已知限制。
+RVC-Web-Runtime 目前处于 **稳定测试版** 阶段。核心功能完整且可用于生产环境，部分增强功能计划在后续版本中实现。
 
 ### ✅ 已完成
 

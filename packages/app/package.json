@@ -1,9 +1,15 @@
 {
   "name": "rvc-web-runtime-app",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "description": "Demo application for RVC-Web-Runtime",
+  "license": "MIT",
+  "author": "moyue23 (https://github.com/moyue23)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/moyue23/rvc-web-runtime.git"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",

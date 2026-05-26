@@ -22,22 +22,71 @@ RVC-Web-Runtime is a specialized runtime engine focused on delivering industry-s
 
 ```text
 rvc-web-runtime/
-├── src/
-│ ├── engine/                  # Core inference engine (UI-agnostic)
-│ │ ├── pipeline/              # Task orchestration and state machine
-│ │ ├── audio/                 # Audio preprocessing (Decode/Resample)
-│ │ ├── model/                 # Model parsing and format adaptation
-│ │ ├── feature/               # Stage A: ContentVec content feature extraction
-│ │ ├── chunking/              # Long audio splitting with mirror padding
-│ │ ├── retrieval/             # Optional: Feature retrieval (Index)
-│ │ ├── pitch/                 # Stage B: RMVPE pitch estimation
-│ │ ├── synth/                 # Stage C: RVC acoustic synthesis
-│ │ ├── post/                  # Post-processing and export (Mix/Wav)
-│ │ └── infra/                 # Compute backend scheduling (WebGPU/WASM)
-│ └── app/                     # Demo application (Web Demo)
-│   ├── main.ts                # Demo entry
-│   └── ui/                    # UI components
-└── .github/                   # CI/CD automation workflows
+├── packages/
+│   ├── engine/                        # npm package: Core inference engine (UI-agnostic)
+│   │   └── src/
+│   │       ├── pipeline/              # Task orchestration and state machine
+│   │       │   └── runPipeline.ts     # Main pipeline entrypoint (6-stage)
+│   │       ├── audio/                 # Audio preprocessing (Decode/Resample)
+│   │       │   ├── decoder.ts         # Audio file decoding
+│   │       │   ├── resampler.ts       # Sample rate conversion
+│   │       │   ├── processor.ts       # Audio processing utilities
+│   │       │   ├── loader.ts          # Audio file loading
+│   │       │   └── types.ts           # Audio type definitions
+│   │       ├── model/                 # Model loading and ONNX session management
+│   │       │   ├── sessionFactory.ts  # ONNX Runtime session creation
+│   │       │   ├── pthToOnnx.ts       # PyTorch → ONNX auto-conversion
+│   │       │   ├── loader.ts          # Model file loading
+│   │       │   ├── resolver.ts        # Model path resolution
+│   │       │   └── types.ts           # Model type definitions
+│   │       ├── feature/               # Stage A: ContentVec feature extraction
+│   │       │   ├── index.ts           # Module entry (extractHubertFeatures)
+│   │       │   ├── inference.ts       # Feature inference
+│   │       │   ├── preprocess.ts      # Audio preprocessing for ContentVec
+│   │       │   ├── model.ts           # ContentVec model loading
+│   │       │   └── types.ts           # Feature type definitions
+│   │       ├── pitch/                 # Stage B: RMVPE pitch estimation
+│   │       │   ├── index.ts           # Module entry (estimatePitch)
+│   │       │   ├── inference.ts       # Pitch inference
+│   │       │   ├── median-filter.ts   # F0 median filtering (pitch smoothing)
+│   │       │   ├── model.ts           # RMVPE model loading
+│   │       │   └── types.ts           # Pitch type definitions
+│   │       ├── synth/                 # Stage C: RVC acoustic synthesis
+│   │       │   ├── index.ts           # Module entry (synthesizeVoice)
+│   │       │   ├── runner.ts          # ONNX inference runner
+│   │       │   ├── aligner.ts         # Feature-pitch alignment
+│   │       │   ├── builder.ts         # ONNX graph construction
+│   │       │   ├── output.ts          # Output post-processing
+│   │       │   └── types.ts           # Synthesis type definitions
+│   │       ├── timbre/                # Voice timbre management
+│   │       │   ├── index.ts           # Module entry (createVoiceTimbre)
+│   │       │   └── types.ts           # Timbre type definitions
+│   │       ├── chunking/              # Long audio splitting with mirror padding
+│   │       │   ├── index.ts           # Module entry (chunking utilities)
+│   │       │   └── types.ts           # Chunking type definitions
+│   │       ├── post/                  # Post-processing (WAV encoding)
+│   │       │   ├── index.ts           # Module entry (encodeMonoPcmToWav)
+│   │       │   ├── encoder.ts         # WAV audio encoding
+│   │       │   └── types.ts           # Post type definitions
+│   │       ├── worker/                # Web Worker inference support
+│   │       │   ├── index.ts           # Worker module entry
+│   │       │   ├── client.ts          # Worker client interface
+│   │       │   ├── inference.worker.ts # Worker implementation
+│   │       │   └── types.ts           # Worker type definitions
+│   │       ├── errors/                # Error handling
+│   │       │   ├── errorCodes.ts      # Error code constants
+│   │       │   └── RvcError.ts        # Custom error class
+│   │       └── types/                 # Shared TypeScript type definitions
+│   │           ├── runtime.ts         # RuntimeContext and EngineState
+│   │           └── pipeline.ts        # Pipeline API contracts
+│   └── app/                           # Demo application (not published)
+│       └── src/
+│           ├── main.ts                # Demo entrypoint
+│           └── styles/                # CSS styles
+├── docs/                              # API documentation
+├── .github/                           # CI/CD workflows
+├── package.json                       # Monorepo root (npm workspaces)
+└── tsconfig.json                      # Root TypeScript configuration
 ```
 
 ## 🛠 Tech Stack
@@ -49,8 +98,30 @@ rvc-web-runtime/
 
 ## 🚀 Usage
 
+### As an npm package
+
 ```bash
-npm rvc-web
+npm install rvc-web-runtime
+```
+
+```typescript
+import { runPipeline } from 'rvc-web-runtime';
+
+// See API documentation for detailed usage
+```
+
+### Development / Demo
+
+```bash
+# Clone the repository
+git clone https://github.com/moyue23/rvc-web-runtime.git
+cd rvc-web-runtime
+
+# Install dependencies
+npm install
+
+# Run the demo application
+npm run dev
 ```
 
 ## 📖 API Documentation
