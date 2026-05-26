@@ -86,7 +86,7 @@ RVC-Web-Runtime 目前处于 **Alpha** 阶段。基本功能可用，但存在�
 | **音量包络融合**    | 🚧 计划中 |
 | **清辅音/呼吸保护** | 🚧 计划中 |
 | **F0 中值滤波**     | 🚧 计划中 |
-| **WebGPU 加速**     | 🚧 计划中 |
+| **WebGPU 加速**     | 🚧 部分支持（RVC 主模型有问题） |
 
 ### ⚠️ 已知限制
 
@@ -94,7 +94,8 @@ RVC-Web-Runtime 目前处于 **Alpha** 阶段。基本功能可用，但存在�
 - **输出质量**：存在轻微杂音；特征检索尚未实现
 - **输出采样率**：固定 48kHz（输入重采样为 16kHz）
 - **模型兼容性**：仅支持 RVC v2 模型（768 维）
-- **浏览器支持**：需要 WebAssembly SIMD；WebGPU 后端开发中
+- **浏览器支持**：需要 WebAssembly SIMD；WebGPU 后端在 onnxruntime-web 1.24 中存在已知问题
+- **WebGPU 支持**：RVC 主模型在 WebGPU 后端存在已知的内核错误。ContentVec 和 RMVPE 可能支持 WebGPU，但当前为保持一致性配置为使用 WASM。
 
 ### 📥 所需模型
 

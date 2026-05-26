@@ -35,4 +35,10 @@ export interface PipelineOptions {
   inputSampleRate?: number;
   outputSampleRate?: number;
   pitchShift?: number;
+  /** Enable F0 median filtering for pitch smoothing (default: true) */
+  medianFilter?: boolean;
+  /** Window size for median filter (must be odd, default: 3) */
+  medianFilterWindow?: number;
+  /** Use aggressive median filtering (larger window, stronger smoothing) */
+  aggressiveMedianFilter?: boolean;
 }

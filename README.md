@@ -85,8 +85,13 @@ RVC-Web-Runtime is now in **Alpha** stage. It is functional for basic use cases 
 | ------------------------ | ---------- |
 | **Volume Envelope Mix**  | 🚧 Planned |
 | **Voiceless Protection** | 🚧 Planned |
-| **F0 Median Filtering**  | 🚧 Planned |
-| **WebGPU Acceleration**  | 🚧 Planned |
+| **WebGPU Acceleration**  | 🚧 Partial (RVC main model has issues) |
+
+### ✅ Recently Completed
+
+| Feature                  | Status     | Description |
+| ------------------------ | ---------- | ----------- |
+| **F0 Median Filtering**  | ✅ Working | Pitch smoothing with standard (window=3) and aggressive (window=5) modes. Reduces pitch jitter and spikes for more stable vocal output. |
 
 ### ⚠️ Known Limitations
 
@@ -94,7 +99,8 @@ RVC-Web-Runtime is now in **Alpha** stage. It is functional for basic use cases 
 - **Output Quality**: Minor artifacts present; Retrieval not yet implemented
 - **Output Sample Rate**: Fixed at 48kHz (input resampled to 16kHz)
 - **Model Compatibility**: Only RVC v2 models (768-dim) supported
-- **Browser Support**: Requires WebAssembly with SIMD; WebGPU backend coming
+- **Browser Support**: Requires WebAssembly with SIMD; WebGPU backend has known issues with onnxruntime-web 1.24
+- **WebGPU Support**: RVC main model has known kernel bugs in WebGPU backend. ContentVec and RMVPE may work with WebGPU but are currently configured to use WASM for consistency.
 
 ### 📥 Required Models
 

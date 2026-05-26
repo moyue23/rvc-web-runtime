@@ -102,6 +102,9 @@ export async function runPipeline(
 
         const pitch = await estimatePitch(chunk.data, {
           rmvpe: rmvpeSession,
+          medianFilter: options.medianFilter,
+          medianFilterWindow: options.medianFilterWindow,
+          aggressiveMedianFilter: options.aggressiveMedianFilter,
         });
 
         const synthesized = await synthesizeVoice(rvcSession, features, pitch, {

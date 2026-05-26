@@ -141,7 +141,51 @@ Worker 客户端配置。
 ```typescript
 interface WorkerClientOptions {
   timeout?: number; // 超时时间（毫秒），默认 300000（5分钟）
+  speakerId?: number; // 多说话人模型的说话人 ID，默认 0
+  pitchShift?: number; // 音高偏移（半音），默认 0
+  medianFilter?: boolean; // 启用 F0 中值滤波进行音高平滑，默认 true
+  medianFilterWindow?: number; // 中值滤波窗口大小（必须为奇数），默认 3
+  aggressiveMedianFilter?: boolean; // 使用激进中值滤波（更强的平滑效果），默认 false
+  chunkDuration?: number; // 分块时长（秒），默认 20
+  padDuration?: number; // 填充时长（秒），默认 0.5
+  inputSampleRate?: number; // 输入采样率，默认 16000
+  outputSampleRate?: number; // 输出采样率，默认 48000
 }
+```
+
+### F0 中值滤波
+
+F0 中值滤波是一种音高平滑技术，用于减少估计音高曲线中的抖动和尖峰。此功能特别适用于：
+
+- **稳定不稳定的音高**：减少业余歌唱或情感化说话中的音高抖动
+- **去除音高峰值**：过滤导致伪音的孤立音高跳变
+- **提高整体平滑度**：创建更自然的音高过渡
+
+**提供两种滤波模式：**
+
+1. **标准模式** (`medianFilter: true`)：
+   - 窗口大小：3（默认，可通过 `medianFilterWindow` 调整）
+   - 适用于大多数情况的轻度平滑
+   - 对自然音高变化影响最小
+
+2. **激进模式** (`aggressiveMedianFilter: true`)：
+   - 窗口大小：5（默认，可通过 `medianFilterWindow` 调整）
+   - 针对问题音频的更强平滑
+   - 更有效地去除显著音高峰值
+
+**调试输出**：启用时，滤波器会将统计信息记录到控制台：
+- 改变的帧数
+- 受影响帧的百分比
+- 总频率变化量和平均变化量
+- 最大变化及其位置
+
+**使用示例**：
+```typescript
+const result = await runPipelineInWorker(files, audioData, 16000, callbacks, {
+  medianFilter: true, // 启用音高平滑
+  medianFilterWindow: 5, // 使用更大的窗口进行更强平滑
+  aggressiveMedianFilter: false, // 使用标准模式
+});
 ```
 
 ---
@@ -331,10 +375,32 @@ async function convertVoice(
 
 ---
 
-## WebGPU 兼容性说明（未来）
+## WebGPU 兼容性说明
 
-虽然当前版本仅支持 WASM 后端，但代码结构中保留了 WebGPU 支持接口。未来如果以下问题得到解决，可以重新启用 WebGPU：
+**当前状态**：WebGPU 在 RVC 主模型上存在已知问题。ContentVec 和 RMVPE 可能支持 WebGPU，但当前配置为使用 WASM。
 
-1. ONNX Runtime Web 支持 INT64 数据类型转换
-2. RVC 模型导出时避免使用动态形状广播
-3. WebGPU 算子回退机制可靠
+### 已知问题
+WebGPU 后端在 RVC 主模型上失败，错误信息为：
+```
+[WebGPU] Kernel "[Add] add_1015" failed. Error: Can't perform binary op on the given tensors
+```
+
+即使两个输入具有完全相同的形状（`[1, 384, 4096]`），仍然会出现此错误，这表明是 onnxruntime-web 1.24 的 WebGPU 实现存在内核错误，而不是形状或类型问题。
+
+### 当前配置
+所有模型当前均配置为使用 WASM 后端以保持一致性：
+- **RVC 主模型**：使用 `createSessionFromOnnxBuffer()`，默认后端为 `["wasm"]`
+- **ContentVec**：明确配置为 `executionProviders: ["wasm"]`
+- **RMVPE**：明确配置为 `executionProviders: ["wasm"]`
+
+### 测试状态
+- **RVC 主模型**：已确认在 WebGPU 上失败（内核错误）
+- **ContentVec**：未在 WebGPU 上测试（可能可用）
+- **RMVPE**：未在 WebGPU 上测试（可能可用）
+
+### 建议
+1. 继续为所有模型使用 WASM 后端（当前默认配置，稳定）
+2. 等待 onnxruntime-web 更新以修复 WebGPU 内核错误
+3. 如果需要部分加速，可考虑单独测试 ContentVec 和 RMVPE 的 WebGPU 支持
+
+目前推荐使用 WASM + SIMD + 多线程，这为大多数 RVC 场景提供了足够的性能。

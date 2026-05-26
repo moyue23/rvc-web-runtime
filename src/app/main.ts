@@ -157,6 +157,9 @@ async function onRun(): Promise<void> {
 
   const speakerId = parseInt(byId<HTMLInputElement>("speakerId").value, 10) || 0;
   const pitchShift = parseInt(byId<HTMLInputElement>("pitchShift").value, 10) || 0;
+  const medianFilter = byId<HTMLInputElement>("medianFilter").checked;
+  const medianFilterWindow = parseInt(byId<HTMLInputElement>("medianFilterWindow").value, 10) || 3;
+  const aggressiveMedianFilter = byId<HTMLInputElement>("aggressiveMedianFilter").checked;
 
   setText("status", "Running...");
 
@@ -177,7 +180,7 @@ async function onRun(): Promise<void> {
           }
         },
       },
-      { speakerId, pitchShift },
+      { speakerId, pitchShift, medianFilter, medianFilterWindow, aggressiveMedianFilter },
     );
 
     const endTime = performance.now();

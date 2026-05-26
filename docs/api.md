@@ -141,7 +141,51 @@ Worker client configuration.
 ```typescript
 interface WorkerClientOptions {
   timeout?: number; // Timeout in milliseconds, default 300000 (5 minutes)
+  speakerId?: number; // Speaker ID for multi-speaker models, default 0
+  pitchShift?: number; // Pitch shift in semitones, default 0
+  medianFilter?: boolean; // Enable F0 median filtering for pitch smoothing, default true
+  medianFilterWindow?: number; // Window size for median filter (must be odd), default 3
+  aggressiveMedianFilter?: boolean; // Use aggressive median filtering (stronger smoothing), default false
+  chunkDuration?: number; // Chunk duration in seconds, default 20
+  padDuration?: number; // Padding duration in seconds, default 0.5
+  inputSampleRate?: number; // Input sample rate, default 16000
+  outputSampleRate?: number; // Output sample rate, default 48000
 }
+```
+
+### F0 Median Filtering
+
+F0 median filtering is a pitch smoothing technique that reduces pitch jitter and spikes in the estimated pitch curve. This feature is particularly useful for:
+
+- **Stabilizing unstable pitch**: Reduces pitch wobble in amateur singing or emotional speech
+- **Removing pitch spikes**: Filters out isolated pitch jumps that cause artifacts
+- **Improving overall smoothness**: Creates more natural-sounding pitch transitions
+
+**Two filtering modes available:**
+
+1. **Standard Mode** (`medianFilter: true`):
+   - Window size: 3 (default, can be adjusted with `medianFilterWindow`)
+   - Light smoothing suitable for most cases
+   - Minimal impact on natural pitch variations
+
+2. **Aggressive Mode** (`aggressiveMedianFilter: true`):
+   - Window size: 5 (default, can be adjusted with `medianFilterWindow`)
+   - Stronger smoothing for problematic audio
+   - More effective at removing significant pitch spikes
+
+**Debug Output**: When enabled, the filter logs statistics to console:
+- Number of frames changed
+- Percentage of affected frames
+- Total and average frequency delta
+- Maximum change and its location
+
+**Example Usage**:
+```typescript
+const result = await runPipelineInWorker(files, audioData, 16000, callbacks, {
+  medianFilter: true, // Enable pitch smoothing
+  medianFilterWindow: 5, // Use larger window for stronger smoothing
+  aggressiveMedianFilter: false, // Use standard mode
+});
 ```
 
 ---
@@ -331,12 +375,32 @@ async function convertVoice(
 
 ---
 
-## WebGPU Compatibility Notes (Future)
+## WebGPU Compatibility Notes
 
-Although the current version only supports the WASM backend, the code structure retains WebGPU support interfaces. WebGPU could be re-enabled if the following issues are resolved:
+**Current Status**: WebGPU has known issues with the RVC main model. ContentVec and RMVPE may work with WebGPU but are currently configured to use WASM.
 
-1. ONNX Runtime Web supports INT64 data type conversion
-2. RVC models are exported without dynamic shape broadcasting
-3. WebGPU operator fallback mechanism becomes more reliable
+### Known Issues
+The WebGPU backend fails on the RVC main model with the error:
+```
+[WebGPU] Kernel "[Add] add_1015" failed. Error: Can't perform binary op on the given tensors
+```
+
+This occurs even though both inputs have identical shapes (`[1, 384, 4096]`), indicating a kernel bug in onnxruntime-web 1.24's WebGPU implementation rather than shape/type issues.
+
+### Current Configuration
+All models are currently configured to use WASM backend for consistency:
+- **RVC Main Model**: Uses `createSessionFromOnnxBuffer()` with default `["wasm"]` backends
+- **ContentVec**: Explicitly configured with `executionProviders: ["wasm"]`
+- **RMVPE**: Explicitly configured with `executionProviders: ["wasm"]`
+
+### Testing Status
+- **RVC Main Model**: Confirmed to fail with WebGPU (kernel bug)
+- **ContentVec**: Not tested with WebGPU (may work)
+- **RMVPE**: Not tested with WebGPU (may work)
+
+### Recommendations
+1. Continue using WASM backend for all models (current default, stable configuration)
+2. Wait for onnxruntime-web updates that may fix the WebGPU kernel bugs
+3. Consider testing WebGPU for ContentVec and RMVPE separately if partial acceleration is desired
 
 Currently, WASM + SIMD + multi-threading is recommended, which provides sufficient performance for most RVC scenarios.
