@@ -1,6 +1,6 @@
 {
   "name": "rvc-web-runtime",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "Browser-based RVC (Retrieval-based Voice Conversion) inference engine",
   "keywords": [
@@ -46,7 +46,8 @@
     "format:check": "prettier src --check"
   },
   "dependencies": {
-    "onnxruntime-web": "^1.24.2"
+    "onnxruntime-web": "^1.24.2",
+    "rvc-onnx-web": "^1.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
