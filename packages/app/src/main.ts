@@ -1,9 +1,15 @@
 import "./styles/main.css";
-import { prepareInputAudio } from "../engine/audio";
-import { runPipelineInWorker } from "../engine/worker/client";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
-import type { EngineState } from "../engine/types/runtime/runtime";
+
+// 暂时使用相对路径导入，等workspace配置好后再改回包导入
+// import { prepareInputAudio, runPipelineInWorker } from "rvc-web-runtime";
+// import type { EngineState } from "rvc-web-runtime";
+
+// 临时：直接从engine源码导入
+import { prepareInputAudio } from "../../engine/src/audio";
+import { runPipelineInWorker } from "../../engine/src/worker/client";
+import type { EngineState } from "../../engine/src/types/runtime/runtime";
 
 /** Demo-only mapping: stage name → approximate progress for UI display. */
 const STAGE_PROGRESS: Record<EngineState, number> = {

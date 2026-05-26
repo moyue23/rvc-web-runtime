@@ -4,7 +4,7 @@
     "useDefineForClassFields": true,
     "module": "ESNext",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": ["@webgpu/types"],
+    "types": ["vite/client", "@webgpu/types"],
     "skipLibCheck": true,
 
     /* Bundler mode */
@@ -22,6 +22,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["packages/**/*.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src"]
 }

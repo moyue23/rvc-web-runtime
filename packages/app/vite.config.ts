@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import { viteStaticCopy } from "vite-plugin-static-copy";
+import { resolve } from "path";
 
 export default defineConfig({
   resolve: {
@@ -17,6 +18,8 @@ export default defineConfig({
     },
   },
 
+  publicDir: "public",
+
   plugins: [
     viteStaticCopy({
       targets: [
@@ -27,6 +30,19 @@ export default defineConfig({
         {
           src: "node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded*.wasm",
           dest: "onnx-wasm",
+        },
+        {
+          src: "node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded*.jsep.mjs",
+          dest: "onnx-wasm",
+        },
+        {
+          src: "node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded*.jsep.wasm",
+          dest: "onnx-wasm",
+        },
+        // Copy docs from root directory
+        {
+          src: resolve(__dirname, "../../docs/*.md"),
+          dest: "docs",
         },
       ],
     }),
