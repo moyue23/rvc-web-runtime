@@ -271,16 +271,16 @@ function isWorkerSupported(): boolean;
 
 ### 模型相关
 
-| 错误码                        | 说明                  |
-| ----------------------------- | --------------------- |
-| `MODEL_FILE_EMPTY`            | 模型文件为空          |
-| `MODEL_UNSUPPORTED_FORMAT`    | 不支持的模型格式      |
-| `MODEL_READ_FAILED`           | 模型文件读取失败      |
-| `MODEL_CONVERTER_UNAVAILABLE` | .pth 转换器不可用     |
-| `MODEL_CONVERSION_FAILED`     | .pth -> ONNX 转换失败 |
-| `MODEL_VERIFY_SESSION_FAILED` | 模型会话验证失败      |
-| `MODEL_VERIFY_RUN_FAILED`     | 模型验证运行失败      |
-| `MODEL_VERIFY_UNSUPPORTED_INPUT` | 模型输入格式不支持 |
+| 错误码                           | 说明                  |
+| -------------------------------- | --------------------- |
+| `MODEL_FILE_EMPTY`               | 模型文件为空          |
+| `MODEL_UNSUPPORTED_FORMAT`       | 不支持的模型格式      |
+| `MODEL_READ_FAILED`              | 模型文件读取失败      |
+| `MODEL_CONVERTER_UNAVAILABLE`    | .pth 转换器不可用     |
+| `MODEL_CONVERSION_FAILED`        | .pth -> ONNX 转换失败 |
+| `MODEL_VERIFY_SESSION_FAILED`    | 模型会话验证失败      |
+| `MODEL_VERIFY_RUN_FAILED`        | 模型验证运行失败      |
+| `MODEL_VERIFY_UNSUPPORTED_INPUT` | 模型输入格式不支持    |
 
 ### 特征提取相关
 

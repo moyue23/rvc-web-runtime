@@ -271,16 +271,16 @@ All errors are thrown via `RvcError`, containing `code` and `message`.
 
 ### Model Related
 
-| Error Code                    | Description                       |
-| ----------------------------- | --------------------------------- |
-| `MODEL_FILE_EMPTY`            | Model file is empty               |
-| `MODEL_UNSUPPORTED_FORMAT`    | Unsupported model format          |
-| `MODEL_READ_FAILED`           | Model file read failed            |
-| `MODEL_CONVERTER_UNAVAILABLE` | .pth converter unavailable        |
-| `MODEL_CONVERSION_FAILED`     | .pth -> ONNX conversion failed    |
-| `MODEL_VERIFY_SESSION_FAILED` | Model session verification failed |
-| `MODEL_VERIFY_RUN_FAILED`     | Model verification run failed     |
-| `MODEL_VERIFY_UNSUPPORTED_INPUT` | Model input format unsupported |
+| Error Code                       | Description                       |
+| -------------------------------- | --------------------------------- |
+| `MODEL_FILE_EMPTY`               | Model file is empty               |
+| `MODEL_UNSUPPORTED_FORMAT`       | Unsupported model format          |
+| `MODEL_READ_FAILED`              | Model file read failed            |
+| `MODEL_CONVERTER_UNAVAILABLE`    | .pth converter unavailable        |
+| `MODEL_CONVERSION_FAILED`        | .pth -> ONNX conversion failed    |
+| `MODEL_VERIFY_SESSION_FAILED`    | Model session verification failed |
+| `MODEL_VERIFY_RUN_FAILED`        | Model verification run failed     |
+| `MODEL_VERIFY_UNSUPPORTED_INPUT` | Model input format unsupported    |
 
 ### Feature Extraction Related
 

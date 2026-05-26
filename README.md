@@ -105,7 +105,7 @@ npm install rvc-web-runtime
 ```
 
 ```typescript
-import { runPipeline } from 'rvc-web-runtime';
+import { runPipeline } from "rvc-web-runtime";
 
 // See API documentation for detailed usage
 ```
