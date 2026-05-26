@@ -174,12 +174,14 @@ F0 median filtering is a pitch smoothing technique that reduces pitch jitter and
    - More effective at removing significant pitch spikes
 
 **Debug Output**: When enabled, the filter logs statistics to console:
+
 - Number of frames changed
 - Percentage of affected frames
 - Total and average frequency delta
 - Maximum change and its location
 
 **Example Usage**:
+
 ```typescript
 const result = await runPipelineInWorker(files, audioData, 16000, callbacks, {
   medianFilter: true, // Enable pitch smoothing
@@ -380,7 +382,9 @@ async function convertVoice(
 **Current Status**: WebGPU has known issues with the RVC main model. ContentVec and RMVPE may work with WebGPU but are currently configured to use WASM.
 
 ### Known Issues
+
 The WebGPU backend fails on the RVC main model with the error:
+
 ```
 [WebGPU] Kernel "[Add] add_1015" failed. Error: Can't perform binary op on the given tensors
 ```
@@ -388,17 +392,21 @@ The WebGPU backend fails on the RVC main model with the error:
 This occurs even though both inputs have identical shapes (`[1, 384, 4096]`), indicating a kernel bug in onnxruntime-web 1.24's WebGPU implementation rather than shape/type issues.
 
 ### Current Configuration
+
 All models are currently configured to use WASM backend for consistency:
+
 - **RVC Main Model**: Uses `createSessionFromOnnxBuffer()` with default `["wasm"]` backends
 - **ContentVec**: Explicitly configured with `executionProviders: ["wasm"]`
 - **RMVPE**: Explicitly configured with `executionProviders: ["wasm"]`
 
 ### Testing Status
+
 - **RVC Main Model**: Confirmed to fail with WebGPU (kernel bug)
 - **ContentVec**: Not tested with WebGPU (may work)
 - **RMVPE**: Not tested with WebGPU (may work)
 
 ### Recommendations
+
 1. Continue using WASM backend for all models (current default, stable configuration)
 2. Wait for onnxruntime-web updates that may fix the WebGPU kernel bugs
 3. Consider testing WebGPU for ContentVec and RMVPE separately if partial acceleration is desired

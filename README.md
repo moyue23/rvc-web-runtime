@@ -81,17 +81,17 @@ RVC-Web-Runtime is now in **Alpha** stage. It is functional for basic use cases 
 
 ### 📋 Planned
 
-| Feature                  | Status     |
-| ------------------------ | ---------- |
-| **Volume Envelope Mix**  | 🚧 Planned |
-| **Voiceless Protection** | 🚧 Planned |
+| Feature                  | Status                                 |
+| ------------------------ | -------------------------------------- |
+| **Volume Envelope Mix**  | 🚧 Planned                             |
+| **Voiceless Protection** | 🚧 Planned                             |
 | **WebGPU Acceleration**  | 🚧 Partial (RVC main model has issues) |
 
 ### ✅ Recently Completed
 
-| Feature                  | Status     | Description |
-| ------------------------ | ---------- | ----------- |
-| **F0 Median Filtering**  | ✅ Working | Pitch smoothing with standard (window=3) and aggressive (window=5) modes. Reduces pitch jitter and spikes for more stable vocal output. |
+| Feature                 | Status     | Description                                                                                                                             |
+| ----------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **F0 Median Filtering** | ✅ Working | Pitch smoothing with standard (window=3) and aggressive (window=5) modes. Reduces pitch jitter and spikes for more stable vocal output. |
 
 ### ⚠️ Known Limitations
 

@@ -174,12 +174,14 @@ F0 中值滤波是一种音高平滑技术，用于减少估计音高曲线中�
    - 更有效地去除显著音高峰值
 
 **调试输出**：启用时，滤波器会将统计信息记录到控制台：
+
 - 改变的帧数
 - 受影响帧的百分比
 - 总频率变化量和平均变化量
 - 最大变化及其位置
 
 **使用示例**：
+
 ```typescript
 const result = await runPipelineInWorker(files, audioData, 16000, callbacks, {
   medianFilter: true, // 启用音高平滑
@@ -380,7 +382,9 @@ async function convertVoice(
 **当前状态**：WebGPU 在 RVC 主模型上存在已知问题。ContentVec 和 RMVPE 可能支持 WebGPU，但当前配置为使用 WASM。
 
 ### 已知问题
+
 WebGPU 后端在 RVC 主模型上失败，错误信息为：
+
 ```
 [WebGPU] Kernel "[Add] add_1015" failed. Error: Can't perform binary op on the given tensors
 ```
@@ -388,17 +392,21 @@ WebGPU 后端在 RVC 主模型上失败，错误信息为：
 即使两个输入具有完全相同的形状（`[1, 384, 4096]`），仍然会出现此错误，这表明是 onnxruntime-web 1.24 的 WebGPU 实现存在内核错误，而不是形状或类型问题。
 
 ### 当前配置
+
 所有模型当前均配置为使用 WASM 后端以保持一致性：
+
 - **RVC 主模型**：使用 `createSessionFromOnnxBuffer()`，默认后端为 `["wasm"]`
 - **ContentVec**：明确配置为 `executionProviders: ["wasm"]`
 - **RMVPE**：明确配置为 `executionProviders: ["wasm"]`
 
 ### 测试状态
+
 - **RVC 主模型**：已确认在 WebGPU 上失败（内核错误）
 - **ContentVec**：未在 WebGPU 上测试（可能可用）
 - **RMVPE**：未在 WebGPU 上测试（可能可用）
 
 ### 建议
+
 1. 继续为所有模型使用 WASM 后端（当前默认配置，稳定）
 2. 等待 onnxruntime-web 更新以修复 WebGPU 内核错误
 3. 如果需要部分加速，可考虑单独测试 ContentVec 和 RMVPE 的 WebGPU 支持
