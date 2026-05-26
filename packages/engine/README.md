@@ -1,6 +1,6 @@
-# RVC-Web-Runtime Engine
+# RVC-Web-Runtime
 
-Browser-based RVC (Retrieval-based Voice Conversion) inference engine.
+Browser-based RVC (Retrieval-based Voice Conversion) inference engine powered by ONNX Runtime Web (WASM).
 
 ## Installation
 
@@ -11,51 +11,70 @@ npm install rvc-web-runtime
 ## Usage
 
 ```typescript
-import { runPipeline } from "rvc-web-runtime";
+import { runPipelineInWorker, prepareInputAudio, isWorkerSupported } from "rvc-web-runtime";
 
-// Load your model files
-const modelFile = await fetch("path/to/model.onnx").then((r) => r.blob());
-const contentVecFile = await fetch("path/to/vec-768-layer-12.onnx").then((r) => r.blob());
-const rmvpeFile = await fetch("path/to/RMVPE.onnx").then((r) => r.blob());
-const audioFile = await fetch("path/to/audio.wav").then((r) => r.blob());
+// Check browser support
+if (!isWorkerSupported()) {
+  throw new Error("Web Workers not supported");
+}
 
-// Run the pipeline
-const result = await runPipeline(
+// Prepare audio (decode + resample to 16kHz)
+const { audio: audioData, sampleRate } = await prepareInputAudio(audioFile);
+
+// Run inference in a Web Worker
+const result = await runPipelineInWorker(
   {
-    model: new File([modelFile], "model.onnx"),
-    contentVec: new File([contentVecFile], "vec-768-layer-12.onnx"),
-    rmvpe: new File([rmvpeFile], "RMVPE.onnx"),
-    audio: new File([audioFile], "audio.wav"),
+    model: modelFile,      // .onnx or .pth file
+    contentVec: hubertFile, // ContentVec ONNX model
+    rmvpe: rmvpeFile,       // RMVPE ONNX model
   },
+  audioData,
+  sampleRate,
   {
     onEvent: (event) => {
-      console.log("Pipeline event:", event);
+      if (event.type === "stage") {
+        console.log(`Stage: ${event.stage}`);
+      } else if (event.type === "chunk") {
+        console.log(`Chunk ${event.current}/${event.total}`);
+      }
     },
   },
   {
-    speakerId: 0,
+    timeout: 300000,
     pitchShift: 0,
     medianFilter: true,
-    medianFilterWindow: 3,
   },
 );
 
-// Get the output audio
-const wavBlob = new Blob([result.outputWav!], { type: "audio/wav" });
+// Download result
+if (result.outputWav) {
+  const url = URL.createObjectURL(result.outputWav);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "output.wav";
+  a.click();
+}
 ```
 
 ## API Documentation
 
-See the main [API documentation](../../docs/api.md) for detailed API reference.
+See the full [API documentation](https://github.com/moyue23/rvc-web-runtime/blob/main/docs/api.md) for detailed reference.
 
 ## Features
 
 - **Full browser inference**: No server required
-- **ONNX Runtime Web**: Uses WASM backend (WebGPU support planned)
+- **Web Worker execution**: Off main thread, non-blocking UI
+- **ONNX Runtime Web**: WASM + SIMD + multi-threading backend
 - **Complete pipeline**: Feature extraction → Pitch estimation → Voice synthesis
-- **F0 Median Filtering**: Pitch smoothing for better audio quality
-- **Long audio support**: Automatic chunking and merging
-- **TypeScript support**: Full type definitions included
+- **F0 median filtering**: Pitch smoothing for better audio quality
+- **Long audio support**: Automatic chunking and crossfade merging
+- **TypeScript**: Full type definitions included
+
+## Browser Support
+
+- **WASM SIMD**: Chrome 91+, Firefox 89+, Safari 16.4+
+- **Multi-threading**: Requires COOP/COEP headers + SharedArrayBuffer
+- **Web Workers**: All modern browsers
 
 ## License
 
