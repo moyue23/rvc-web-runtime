@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-RVC-Web-Runtime is a WebGPU-accelerated inference engine for **Singing Voice Conversion (SVC)** based on RVC, running 100% in the browser using `onnxruntime-web`.
+RVC-Web-Runtime is a WASM-based inference engine for **Singing Voice Conversion (SVC)** based on RVC, running 100% in the browser using `onnxruntime-web`. WebGPU has known issues with the RVC main model, while ContentVec and RMVPE may support WebGPU but are currently configured to use WASM for consistency.
 
 ### Important: SVC vs Real-time Voice Conversion
 
@@ -25,7 +25,7 @@ This project is specifically designed for **offline singing voice conversion (ç¿
 
 2. **Layer 12 Features**: For singing (wide pitch range, complex melodies), we extract features from transformer layer 12 (top layer) which has better global context compared to middle layers used for speech.
 
-3. **Long Audio Handling**: Full songs cannot be processed at once due to WebGPU memory limits. Chunking must be handled at the **pipeline level** (not inside individual stages) to ensure Stage A (feature) and Stage B (pitch) remain frame-aligned.
+3. **Long Audio Handling**: Full songs cannot be processed at once due to browser memory limits. Chunking must be handled at the **pipeline level** (not inside individual stages) to ensure Stage A (feature) and Stage B (pitch) remain frame-aligned.
 
 4. **16kHz Strict Requirement**: ContentVec/HuBERT models require exactly 16,000 Hz input. Any other sample rate will produce garbage features.
 
@@ -70,7 +70,7 @@ src/
 
 - **RuntimeContext** (`src/engine/types/runtime/runtime.ts`) - Shared state object passed through all pipeline stages containing audio buffers, model session, features, and progress
 - **EngineState** - Discriminated union of pipeline stages: `"idle" | "input_preparation" | "model_parsing" | "feature_extraction" | "pitch_estimation" | "voice_synthesis" | "post_processing" | "success" | "failed"`
-- **SessionFactory** (`src/engine/model/sessionFactory.ts`) - Creates ONNX Runtime sessions with backend fallback (WebGPU â†’ WASM)
+- **SessionFactory** (`src/engine/model/sessionFactory.ts`) - Creates ONNX Runtime sessions with backend configuration (WASM for RVC, WebGPU for ContentVec/RMVPE)
 
 ## Code Conventions
 
