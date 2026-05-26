@@ -209,6 +209,7 @@ interface RuntimeContext {
   onnxBuffer?: ArrayBuffer; // ONNX 模型字节
   modelMetaData?: RuntimeModelMetaData; // 模型元数据
   modelSession?: ort.InferenceSession; // ONNX Runtime 会话
+  backend?: "webgpu" | "wasm"; // 当前模型会话使用的执行后端
 
   // 中间结果
   hiddenStates?: Float32Array; // Stage A: HuBERT 特征
@@ -220,6 +221,7 @@ interface RuntimeContext {
 
   // 错误信息
   errorMessage?: string; // 失败时的错误描述
+  errorCode?: string; // 错误码，用于程序化处理
 }
 ```
 
@@ -277,6 +279,8 @@ function isWorkerSupported(): boolean;
 | `MODEL_CONVERTER_UNAVAILABLE` | .pth 转换器不可用     |
 | `MODEL_CONVERSION_FAILED`     | .pth -> ONNX 转换失败 |
 | `MODEL_VERIFY_SESSION_FAILED` | 模型会话验证失败      |
+| `MODEL_VERIFY_RUN_FAILED`     | 模型验证运行失败      |
+| `MODEL_VERIFY_UNSUPPORTED_INPUT` | 模型输入格式不支持 |
 
 ### 特征提取相关
 

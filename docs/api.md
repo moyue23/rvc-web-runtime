@@ -209,6 +209,7 @@ interface RuntimeContext {
   onnxBuffer?: ArrayBuffer; // ONNX model bytes
   modelMetaData?: RuntimeModelMetaData; // Model metadata
   modelSession?: ort.InferenceSession; // ONNX Runtime session
+  backend?: "webgpu" | "wasm"; // Execution backend used by the model session
 
   // Intermediate results
   hiddenStates?: Float32Array; // Stage A: HuBERT features
@@ -220,6 +221,7 @@ interface RuntimeContext {
 
   // Error info
   errorMessage?: string; // Error description on failure
+  errorCode?: string; // Error code for programmatic handling
 }
 ```
 
@@ -277,6 +279,8 @@ All errors are thrown via `RvcError`, containing `code` and `message`.
 | `MODEL_CONVERTER_UNAVAILABLE` | .pth converter unavailable        |
 | `MODEL_CONVERSION_FAILED`     | .pth -> ONNX conversion failed    |
 | `MODEL_VERIFY_SESSION_FAILED` | Model session verification failed |
+| `MODEL_VERIFY_RUN_FAILED`     | Model verification run failed     |
+| `MODEL_VERIFY_UNSUPPORTED_INPUT` | Model input format unsupported |
 
 ### Feature Extraction Related
 
