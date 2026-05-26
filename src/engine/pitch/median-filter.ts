@@ -50,7 +50,8 @@ export function medianFilterF0(f0: Float32Array, windowSize = 3): Float32Array {
 
       // Track changes
       const delta = Math.abs(f0[i] - median);
-      if (delta > 0.1) { // Only count meaningful changes
+      if (delta > 0.1) {
+        // Only count meaningful changes
         changedFrames++;
         totalDelta += delta;
         if (delta > maxDelta) {
@@ -64,15 +65,17 @@ export function medianFilterF0(f0: Float32Array, windowSize = 3): Float32Array {
   // Enhanced debug output
   if (changedFrames > 0) {
     const avgDelta = totalDelta / changedFrames;
-    const percentChanged = (changedFrames / len * 100).toFixed(1);
+    const percentChanged = ((changedFrames / len) * 100).toFixed(1);
     console.log(`[F0 Median Filter] window=${windowSize}, frames=${len}`);
     console.log(`  Changed: ${changedFrames}/${len} (${percentChanged}%)`);
     console.log(`  Total delta: ${totalDelta.toFixed(1)}Hz, Avg: ${avgDelta.toFixed(1)}Hz`);
     console.log(`  Max delta: ${maxDelta.toFixed(1)}Hz at frame ${maxDeltaIndex}`);
-    
+
     // Show example of a significant change
     if (maxDeltaIndex >= 0 && maxDelta > 5) {
-      console.log(`  Example: frame ${maxDeltaIndex}: ${f0[maxDeltaIndex].toFixed(1)}Hz → ${result[maxDeltaIndex].toFixed(1)}Hz (Δ${maxDelta.toFixed(1)}Hz)`);
+      console.log(
+        `  Example: frame ${maxDeltaIndex}: ${f0[maxDeltaIndex].toFixed(1)}Hz → ${result[maxDeltaIndex].toFixed(1)}Hz (Δ${maxDelta.toFixed(1)}Hz)`,
+      );
     }
   } else {
     console.log(`[F0 Median Filter] window=${windowSize}, frames=${len}, no significant changes`);
@@ -80,7 +83,6 @@ export function medianFilterF0(f0: Float32Array, windowSize = 3): Float32Array {
 
   return result;
 }
-
 
 /**
  * Apply aggressive median filter with larger window and additional smoothing.
@@ -130,7 +132,7 @@ export function aggressiveMedianFilterF0(f0: Float32Array, windowSize = 5): Floa
       // Sort the collected values
       const slice = window.slice(0, count);
       slice.sort((a, b) => a - b);
-      
+
       // For aggressive filtering, we can use a weighted approach
       // or apply multiple passes. Here we use a simple median.
       const median = slice[Math.floor(count / 2)];
@@ -138,7 +140,8 @@ export function aggressiveMedianFilterF0(f0: Float32Array, windowSize = 5): Floa
 
       // Track changes
       const delta = Math.abs(f0[i] - median);
-      if (delta > 0.1) { // Only count meaningful changes
+      if (delta > 0.1) {
+        // Only count meaningful changes
         changedFrames++;
         totalDelta += delta;
         if (delta > maxDelta) {
@@ -152,18 +155,22 @@ export function aggressiveMedianFilterF0(f0: Float32Array, windowSize = 5): Floa
   // Enhanced debug output
   if (changedFrames > 0) {
     const avgDelta = totalDelta / changedFrames;
-    const percentChanged = (changedFrames / len * 100).toFixed(1);
+    const percentChanged = ((changedFrames / len) * 100).toFixed(1);
     console.log(`[F0 Aggressive Median Filter] window=${windowSize}, frames=${len}`);
     console.log(`  Changed: ${changedFrames}/${len} (${percentChanged}%)`);
     console.log(`  Total delta: ${totalDelta.toFixed(1)}Hz, Avg: ${avgDelta.toFixed(1)}Hz`);
     console.log(`  Max delta: ${maxDelta.toFixed(1)}Hz at frame ${maxDeltaIndex}`);
-    
+
     // Show example of a significant change
     if (maxDeltaIndex >= 0 && maxDelta > 5) {
-      console.log(`  Example: frame ${maxDeltaIndex}: ${f0[maxDeltaIndex].toFixed(1)}Hz → ${result[maxDeltaIndex].toFixed(1)}Hz (Δ${maxDelta.toFixed(1)}Hz)`);
+      console.log(
+        `  Example: frame ${maxDeltaIndex}: ${f0[maxDeltaIndex].toFixed(1)}Hz → ${result[maxDeltaIndex].toFixed(1)}Hz (Δ${maxDelta.toFixed(1)}Hz)`,
+      );
     }
   } else {
-    console.log(`[F0 Aggressive Median Filter] window=${windowSize}, frames=${len}, no significant changes`);
+    console.log(
+      `[F0 Aggressive Median Filter] window=${windowSize}, frames=${len}, no significant changes`,
+    );
   }
 
   return result;

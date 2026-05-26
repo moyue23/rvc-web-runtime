@@ -36,7 +36,7 @@ export async function estimatePitch(
   const medianFilterEnabled = options.medianFilter !== false;
   const aggressiveMode = options.aggressiveMedianFilter === true;
   const windowSize = options.medianFilterWindow ?? (aggressiveMode ? 5 : 3);
-  
+
   let filteredF0 = f0;
   if (medianFilterEnabled) {
     if (aggressiveMode) {
