@@ -9,15 +9,20 @@ RVC-Web-Runtime is a **WASM-based Retrieval-based Voice Conversion (RVC)** infer
 ## Quick Start
 
 ```typescript
-import { runPipelineInWorker, isWorkerSupported } from "rvc-web-runtime";
+import { createRVC, runPipelineInWorker, isWorkerSupported } from "rvc-web-runtime";
 
 // Check Worker support
 if (!isWorkerSupported()) {
   alert("Web Workers not supported");
 }
 
+// Create runtime context (defaults to jsDelivr CDN)
+const rvc = createRVC();
+// Or with custom CDN: createRVC({ assetBaseUrl: "https://your-cdn.com/rvc/" })
+
 // Run inference
 const result = await runPipelineInWorker(
+  rvc,
   {
     model: modelFile, // .onnx or .pth file
     contentVec: hubertFile, // ContentVec ONNX model
@@ -51,6 +56,43 @@ if (result.outputWav) {
 
 ## API Reference
 
+### createRVC()
+
+Creates a runtime context that configures asset URLs for the engine.
+
+**Function Signature**
+
+```typescript
+function createRVC(config?: RvcConfig): RvcContext;
+```
+
+**Parameters**
+
+| Parameter | Type        | Description               |
+| --------- | ----------- | ------------------------- |
+| `config`  | `RvcConfig` | Optional. See below.      |
+
+**RvcConfig**
+
+```typescript
+interface RvcConfig {
+  assetBaseUrl?: string; // Base URL where worker + WASM files are hosted
+}
+```
+
+If `assetBaseUrl` is omitted, jsDelivr CDN is used by default: `https://cdn.jsdelivr.net/npm/rvc-web-runtime@{version}/dist/`.
+
+**RvcContext**
+
+```typescript
+interface RvcContext {
+  readonly assetBaseUrl: string; // Resolved base URL (trailing / guaranteed)
+  readonly workerUrl: string;    // Full URL to inference.worker.js
+}
+```
+
+---
+
 ### runPipelineInWorker()
 
 Runs the complete RVC inference pipeline in a Web Worker off the main thread.
@@ -59,6 +101,7 @@ Runs the complete RVC inference pipeline in a Web Worker off the main thread.
 
 ```typescript
 async function runPipelineInWorker(
+  ctx: RvcContext,
   files: Omit<PipelineFiles, "audio">,
   audioData: Float32Array,
   audioSampleRate: number,
@@ -69,13 +112,14 @@ async function runPipelineInWorker(
 
 **Parameters**
 
-| Parameter         | Type                           | Description                          |
-| ----------------- | ------------------------------ | ------------------------------------ |
-| `files`           | `Omit<PipelineFiles, "audio">` | Model files (without audio)          |
-| `audioData`       | `Float32Array`                 | Decoded mono PCM data                |
-| `audioSampleRate` | `number`                       | Audio sample rate, **must be 16000** |
-| `callbacks`       | `PipelineCallbacks`            | Optional callbacks                   |
-| `options`         | `WorkerClientOptions`          | Optional configuration               |
+| Parameter         | Type                           | Description                                     |
+| ----------------- | ------------------------------ | ----------------------------------------------- |
+| `ctx`             | `RvcContext`                   | Runtime context from `createRVC()`              |
+| `files`           | `Omit<PipelineFiles, "audio">` | Model files (without audio)                     |
+| `audioData`       | `Float32Array`                 | Decoded mono PCM data                           |
+| `audioSampleRate` | `number`                       | Audio sample rate, **must be 16000**            |
+| `callbacks`       | `PipelineCallbacks`            | Optional callbacks                              |
+| `options`         | `WorkerClientOptions`          | Optional configuration                          |
 
 **Returns**
 
@@ -183,7 +227,7 @@ F0 median filtering is a pitch smoothing technique that reduces pitch jitter and
 **Example Usage**:
 
 ```typescript
-const result = await runPipelineInWorker(files, audioData, 16000, callbacks, {
+const result = await runPipelineInWorker(rvc, files, audioData, 16000, callbacks, {
   medianFilter: true, // Enable pitch smoothing
   medianFilterWindow: 5, // Use larger window for stronger smoothing
   aggressiveMedianFilter: false, // Use standard mode
@@ -336,7 +380,7 @@ Long audio is automatically chunked to prevent memory overflow (OOM). Chunking i
 ## Example: Complete Inference Flow
 
 ```typescript
-import { runPipelineInWorker, isWorkerSupported } from "rvc-web-runtime";
+import { createRVC, runPipelineInWorker, isWorkerSupported } from "rvc-web-runtime";
 import { prepareInputAudio } from "rvc-web-runtime/audio";
 
 async function convertVoice(
@@ -350,11 +394,15 @@ async function convertVoice(
     throw new Error("Web Workers not supported");
   }
 
-  // 2. Prepare audio (decode + resample to 16kHz)
+  // 2. Create runtime context
+  const rvc = createRVC();
+
+  // 3. Prepare audio (decode + resample to 16kHz)
   const { audio: audioData, sampleRate } = await prepareInputAudio(audioFile);
 
-  // 3. Run inference
+  // 4. Run inference
   const ctx = await runPipelineInWorker(
+    rvc,
     { model: modelFile, contentVec: contentVecFile, rmvpe: rmvpeFile },
     audioData,
     sampleRate,
@@ -370,7 +418,7 @@ async function convertVoice(
     { timeout: 600000 }, // 10 minute timeout (long songs)
   );
 
-  // 4. Handle result
+  // 5. Handle result
   if (ctx.state === "success" && ctx.outputWav) {
     return ctx.outputWav;
   }

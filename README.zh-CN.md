@@ -105,7 +105,10 @@ npm install rvc-web-runtime
 ```
 
 ```typescript
-import { runPipeline } from "rvc-web-runtime";
+import { createRVC, runPipelineInWorker } from "rvc-web-runtime";
+
+const rvc = createRVC(); // 默认使用 jsDelivr CDN
+// 或者: createRVC({ assetBaseUrl: "https://your-cdn.com/rvc/" })
 
 // 详细用法请参考 API 文档
 ```

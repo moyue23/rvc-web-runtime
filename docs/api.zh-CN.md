@@ -9,15 +9,20 @@ RVC-Web-Runtime 是一个基于 **WASM** 的 **Retrieval-based Voice Conversion 
 ## 快速开始
 
 ```typescript
-import { runPipelineInWorker, isWorkerSupported } from "rvc-web-runtime";
+import { createRVC, runPipelineInWorker, isWorkerSupported } from "rvc-web-runtime";
 
 // 检查 Worker 支持
 if (!isWorkerSupported()) {
   alert("浏览器不支持 Web Workers");
 }
 
+// 创建运行时上下文（默认使用 jsDelivr CDN）
+const rvc = createRVC();
+// 或使用自定义 CDN: createRVC({ assetBaseUrl: "https://your-cdn.com/rvc/" })
+
 // 运行推理
 const result = await runPipelineInWorker(
+  rvc,
   {
     model: modelFile, // .onnx 或 .pth 文件
     contentVec: hubertFile, // ContentVec ONNX 模型
@@ -51,6 +56,43 @@ if (result.outputWav) {
 
 ## API 参考
 
+### createRVC()
+
+创建运行时上下文，配置引擎的静态资源 URL。
+
+**函数签名**
+
+```typescript
+function createRVC(config?: RvcConfig): RvcContext;
+```
+
+**参数**
+
+| 参数     | 类型        | 说明                    |
+| -------- | ----------- | ----------------------- |
+| `config` | `RvcConfig` | 可选。配置见下方。      |
+
+**RvcConfig**
+
+```typescript
+interface RvcConfig {
+  assetBaseUrl?: string; // Worker 和 WASM 文件部署的基础 URL
+}
+```
+
+不传 `assetBaseUrl` 时默认使用 jsDelivr CDN：`https://cdn.jsdelivr.net/npm/rvc-web-runtime@{version}/dist/`。
+
+**RvcContext**
+
+```typescript
+interface RvcContext {
+  readonly assetBaseUrl: string; // 解析后的基础 URL（保证以 / 结尾）
+  readonly workerUrl: string;    // inference.worker.js 的完整 URL
+}
+```
+
+---
+
 ### runPipelineInWorker()
 
 在主线程外的 Web Worker 中运行完整的 RVC 推理流水线。
@@ -59,6 +101,7 @@ if (result.outputWav) {
 
 ```typescript
 async function runPipelineInWorker(
+  ctx: RvcContext,
   files: Omit<PipelineFiles, "audio">,
   audioData: Float32Array,
   audioSampleRate: number,
@@ -69,13 +112,14 @@ async function runPipelineInWorker(
 
 **参数**
 
-| 参数              | 类型                           | 说明                         |
-| ----------------- | ------------------------------ | ---------------------------- |
-| `files`           | `Omit<PipelineFiles, "audio">` | 模型文件对象（不含音频）     |
-| `audioData`       | `Float32Array`                 | 已解码的单声道 PCM 数据      |
-| `audioSampleRate` | `number`                       | 音频采样率，**必须为 16000** |
-| `callbacks`       | `PipelineCallbacks`            | 可选回调函数                 |
-| `options`         | `WorkerClientOptions`          | 可选配置                     |
+| 参数              | 类型                           | 说明                                   |
+| ----------------- | ------------------------------ | -------------------------------------- |
+| `ctx`             | `RvcContext`                   | `createRVC()` 返回的运行时上下文       |
+| `files`           | `Omit<PipelineFiles, "audio">` | 模型文件对象（不含音频）               |
+| `audioData`       | `Float32Array`                 | 已解码的单声道 PCM 数据                |
+| `audioSampleRate` | `number`                       | 音频采样率，**必须为 16000**           |
+| `callbacks`       | `PipelineCallbacks`            | 可选回调函数                           |
+| `options`         | `WorkerClientOptions`          | 可选配置                               |
 
 **返回值**
 
@@ -183,7 +227,7 @@ F0 中值滤波是一种音高平滑技术，用于减少估计音高曲线中�
 **使用示例**：
 
 ```typescript
-const result = await runPipelineInWorker(files, audioData, 16000, callbacks, {
+const result = await runPipelineInWorker(rvc, files, audioData, 16000, callbacks, {
   medianFilter: true, // 启用音高平滑
   medianFilterWindow: 5, // 使用更大的窗口进行更强平滑
   aggressiveMedianFilter: false, // 使用标准模式
@@ -336,7 +380,7 @@ function isWorkerSupported(): boolean;
 ## 示例：完整推理流程
 
 ```typescript
-import { runPipelineInWorker, isWorkerSupported } from "rvc-web-runtime";
+import { createRVC, runPipelineInWorker, isWorkerSupported } from "rvc-web-runtime";
 import { prepareInputAudio } from "rvc-web-runtime/audio";
 
 async function convertVoice(
@@ -350,11 +394,15 @@ async function convertVoice(
     throw new Error("浏览器不支持 Web Workers");
   }
 
-  // 2. 准备音频（解码 + 重采样到 16kHz）
+  // 2. 创建运行时上下文
+  const rvc = createRVC();
+
+  // 3. 准备音频（解码 + 重采样到 16kHz）
   const { audio: audioData, sampleRate } = await prepareInputAudio(audioFile);
 
-  // 3. 运行推理
+  // 4. 运行推理
   const ctx = await runPipelineInWorker(
+    rvc,
     { model: modelFile, contentVec: contentVecFile, rmvpe: rmvpeFile },
     audioData,
     sampleRate,
@@ -370,7 +418,7 @@ async function convertVoice(
     { timeout: 600000 }, // 10分钟超时（长歌曲）
   );
 
-  // 4. 处理结果
+  // 5. 处理结果
   if (ctx.state === "success" && ctx.outputWav) {
     return ctx.outputWav;
   }

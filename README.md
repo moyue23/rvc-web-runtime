@@ -105,7 +105,10 @@ npm install rvc-web-runtime
 ```
 
 ```typescript
-import { runPipeline } from "rvc-web-runtime";
+import { createRVC, runPipelineInWorker } from "rvc-web-runtime";
+
+const rvc = createRVC(); // defaults to jsDelivr CDN
+// Or: createRVC({ assetBaseUrl: "https://your-cdn.com/rvc/" })
 
 // See API documentation for detailed usage
 ```
