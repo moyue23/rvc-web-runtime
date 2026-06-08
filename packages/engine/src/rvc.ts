@@ -1,5 +1,3 @@
-import * as ort from "onnxruntime-web";
-
 declare const __RVC_VERSION__: string;
 
 /** Configuration for {@link createRVC}. */
@@ -49,10 +47,6 @@ const DEFAULT_CDN_BASE = `https://cdn.jsdelivr.net/npm/rvc-web-runtime@${__RVC_V
 export function createRVC(config: RvcConfig = {}): RvcContext {
   const raw = config.assetBaseUrl ?? DEFAULT_CDN_BASE;
   const assetBaseUrl = raw.endsWith("/") ? raw : `${raw}/`;
-
-  // Let ONNX Runtime know where to load WASM files from
-  ort.env.wasm.wasmPaths = assetBaseUrl;
-
   const workerUrl = new URL("inference.worker.js", assetBaseUrl).href;
 
   return {
