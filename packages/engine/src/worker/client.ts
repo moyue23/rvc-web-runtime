@@ -5,6 +5,7 @@ import type {
   PipelineOptions,
 } from "../types/contracts/pipeline";
 import type { RuntimeContext } from "../types/runtime/runtime";
+import type { RvcContext } from "../rvc";
 import { RvcError } from "../errors/RvcError";
 
 export interface WorkerClientOptions extends PipelineOptions {
@@ -13,8 +14,11 @@ export interface WorkerClientOptions extends PipelineOptions {
 
 /**
  * Runs the RVC pipeline in a Web Worker.
+ *
+ * The worker script is loaded from {@link RvcContext.workerUrl}.
  */
 export async function runPipelineInWorker(
+  ctx: RvcContext,
   files: Omit<PipelineFiles, "audio">,
   audioData: Float32Array,
   audioSampleRate: number,
@@ -30,7 +34,7 @@ export async function runPipelineInWorker(
   ]);
 
   return new Promise((resolve, reject) => {
-    const worker = new Worker(new URL("./inference.worker.ts", import.meta.url), {
+    const worker = new Worker(ctx.workerUrl, {
       type: "module",
     });
 

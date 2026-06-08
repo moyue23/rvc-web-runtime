@@ -1,8 +1,14 @@
 import { defineConfig } from "vite";
 import { resolve } from "path";
 import dts from "vite-plugin-dts";
+import { viteStaticCopy } from "vite-plugin-static-copy";
+import pkg from "./package.json";
 
 export default defineConfig({
+  define: {
+    __RVC_VERSION__: JSON.stringify(pkg.version),
+  },
+
   resolve: {
     conditions: ["onnxruntime-web-use-extern-wasm"],
   },
@@ -19,17 +25,15 @@ export default defineConfig({
       formats: ["es"],
     },
     rollupOptions: {
-      // 确保外部化那些你不想打包进库的依赖
-      external: ["onnxruntime-web"],
+      external: ["onnxruntime-web", "rvc-onnx-web"],
       output: {
-        // 为外部化的依赖提供全局变量
         globals: {
           "onnxruntime-web": "ort",
         },
       },
     },
     sourcemap: true,
-    minify: false, // 库构建通常不压缩，让使用者自己压缩
+    minify: false,
     outDir: "dist",
   },
 
@@ -38,6 +42,18 @@ export default defineConfig({
       insertTypesEntry: true,
       include: ["src"],
       outDir: "dist",
+    }),
+    viteStaticCopy({
+      targets: [
+        {
+          src: resolve(__dirname, "../../node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.mjs"),
+          dest: "ort-wasm",
+        },
+        {
+          src: resolve(__dirname, "../../node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.wasm"),
+          dest: "ort-wasm",
+        },
+      ],
     }),
   ],
 });

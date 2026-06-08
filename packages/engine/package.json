@@ -39,7 +39,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "vite build",
+    "build": "vite build && vite build -c vite.config.worker.ts",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "format": "prettier src --write",
@@ -53,6 +53,7 @@
     "@types/node": "^20.10.0",
     "typescript": "~5.9.3",
     "vite": "^7.3.1",
-    "vite-plugin-dts": "^4.3.0"
+    "vite-plugin-dts": "^4.3.0",
+    "vite-plugin-static-copy": "^3.4.0"
   }
 }
