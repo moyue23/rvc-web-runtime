@@ -31,8 +31,10 @@ This project is specifically designed for **offline singing voice conversion (�
 
 ## Build Commands
 
+Build and tool configuration files are at the repo root: `vite.config.ts`, `tsconfig.json`, `eslint.config.js`, `.prettierrc`.
+
 - `npm run dev` - Start Vite dev server (requires COOP/COEP headers for SharedArrayBuffer)
-- `npm run build` - Run TypeScript check and build production bundle to `dist/`
+- `npm run build` - Run TypeScript check and build production bundle to `dist/` (build artifact, do not edit manually)
 - `npm run preview` - Serve the built app locally from `dist/`
 - `npm run lint` / `npm run lint:fix` - Run ESLint check or auto-fix
 - `npm run format` / `npm run format:check` - Apply or verify Prettier formatting
@@ -65,6 +67,8 @@ src/
 │   └── types/              # RuntimeContext, contracts, state types
 └── app/                    # Demo UI (main.ts entrypoint)
 ```
+
+Documentation is in `README.md` and `README.zh-CN.md`.
 
 ### Key Abstractions
 
@@ -133,10 +137,11 @@ src/engine/{module}/
 ### Formatting
 
 Prettier config: 2-space indent, semicolons, double quotes, trailing commas, 100 char width.
+Linting uses ESLint + `typescript-eslint`; browser globals are allowed in `src/**`, Node globals in config files.
 
 ### Vite Configuration Notes
 
-- WASM files from `onnxruntime-web` are copied to `dist/onnx-wasm/` via `vite-plugin-static-copy`
+- WASM files from `onnxruntime-web` are copied to `dist/onnx-wasm/` via `vite-plugin-static-copy` at build/dev time; avoid manual edits to generated copies
 - Dev server sets COOP/COEP headers for SharedArrayBuffer support
 - `onnxruntime-web` is excluded from `optimizeDeps` to avoid bundling issues
 
