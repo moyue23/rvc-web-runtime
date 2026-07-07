@@ -91,6 +91,18 @@ interface RvcContext {
 }
 ```
 
+> **Worker 加载方式**：`workerUrl` **并非**直接传给 `new Worker()`。
+> 浏览器禁止用跨域 URL 创建 module Worker（会抛 `SecurityError`）。客户端会先
+> `fetch()` 拉取脚本文本，包成同源 `Blob` URL，再用它创建 Worker。因此：
+>
+> - 提供 `workerUrl` 的服务器**必须返回 CORS 头**（例如
+>   `Access-Control-Allow-Origin: *`）。jsDelivr 等多数 CDN 默认满足；自建源需
+>   自行配置，否则会抛 `WORKER_FETCH_FAILED`。
+> - 若页面设置了 `Content-Security-Policy`，需在 `worker-src` 中允许 `blob:`
+>   （例如 `worker-src 'self' blob:;`），否则 Blob URL Worker 会被拦截。
+> - `assetBaseUrl` 会被传入 worker 作为 `ort.env.wasm.wasmPaths`，因为 Blob
+>   worker 内部的 `self.location` 是 `blob:` URL，无法用于定位 WASM 文件。
+
 ---
 
 ### runPipelineInWorker()
@@ -352,10 +364,11 @@ function isWorkerSupported(): boolean;
 
 ### Worker 相关
 
-| 错误码                 | 说明            |
-| ---------------------- | --------------- |
-| `WORKER_TIMEOUT`       | 推理超时        |
-| `WORKER_UNKNOWN_ERROR` | Worker 未知错误 |
+| 错误码                 | 说明                                  |
+| ---------------------- | ------------------------------------- |
+| `WORKER_TIMEOUT`       | 推理超时                              |
+| `WORKER_UNKNOWN_ERROR` | Worker 未知错误                       |
+| `WORKER_FETCH_FAILED`  | 拉取 Worker 脚本失败（CORS / 网络错误） |
 
 ---
 
@@ -374,6 +387,20 @@ function isWorkerSupported(): boolean;
 - **WASM SIMD**: Chrome 91+, Firefox 89+, Safari 16.4+
 - **WASM 多线程**: 需要 COOP/COEP 响应头 + SharedArrayBuffer
 - **Web Workers**: 所有现代浏览器
+
+### 部署与安全要求
+
+当从 CDN 或任何非页面同源地址加载 worker 时：
+
+- **CORS**：提供 `inference.worker.js` 的源必须返回
+  `Access-Control-Allow-Origin: *`（或你的页面源）。jsDelivr 等公共 CDN 默认
+  满足。自建静态服务器必须开启 CORS，否则拉取 worker 脚本时会抛
+  `WORKER_FETCH_FAILED`。
+- **CSP `worker-src`**：worker 通过同源 `blob:` URL 加载，因此
+  `Content-Security-Policy` 必须允许它，例如 `worker-src 'self' blob:;`。
+  仅设 `worker-src 'self'` 会阻止 worker 启动。
+- **CSP `connect-src`**：`fetch()` worker 脚本和 WASM 文件需要被允许——加入
+  CDN 源，例如 `connect-src 'self' https://cdn.jsdelivr.net;`。
 
 ---
 

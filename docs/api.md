@@ -91,6 +91,21 @@ interface RvcContext {
 }
 ```
 
+> **How the worker is loaded**: `workerUrl` is **not** passed directly to `new Worker()`.
+> Browsers forbid constructing a module Worker from a cross-origin URL (the script
+> throws `SecurityError`). Instead, the client `fetch()`es the script text, wraps it
+> in a same-origin `Blob` URL, and constructs the Worker from that. As a consequence:
+>
+> - The host serving `workerUrl` **must return CORS headers** (e.g.
+>   `Access-Control-Allow-Origin: *`). jsDelivr and most CDNs do this by default;
+>   self-hosted origins must be configured accordingly, otherwise
+>   `WORKER_FETCH_FAILED` is thrown.
+> - If your page ships a `Content-Security-Policy`, add `blob:` to `worker-src`
+>   (e.g. `worker-src 'self' blob:;`), otherwise the Blob URL Worker is blocked.
+> - `assetBaseUrl` is forwarded into the worker and used as `ort.env.wasm.wasmPaths`,
+>   because `self.location` inside a Blob worker is a `blob:` URL and cannot be
+>   used to locate the WASM files.
+
 ---
 
 ### runPipelineInWorker()
@@ -352,10 +367,11 @@ All errors are thrown via `RvcError`, containing `code` and `message`.
 
 ### Worker Related
 
-| Error Code             | Description          |
-| ---------------------- | -------------------- |
-| `WORKER_TIMEOUT`       | Inference timeout    |
-| `WORKER_UNKNOWN_ERROR` | Worker unknown error |
+| Error Code             | Description                                  |
+| ---------------------- | -------------------------------------------- |
+| `WORKER_TIMEOUT`       | Inference timeout                            |
+| `WORKER_UNKNOWN_ERROR` | Worker unknown error                         |
+| `WORKER_FETCH_FAILED`  | Failed to fetch the worker script (e.g. CORS / network error) |
 
 ---
 
@@ -374,6 +390,21 @@ Long audio is automatically chunked to prevent memory overflow (OOM). Chunking i
 - **WASM SIMD**: Chrome 91+, Firefox 89+, Safari 16.4+
 - **WASM Multi-threading**: Requires COOP/COEP headers + SharedArrayBuffer
 - **Web Workers**: All modern browsers
+
+### Hosting & Security Requirements
+
+When loading the worker from a CDN or any origin other than your own page:
+
+- **CORS**: the origin serving `inference.worker.js` must respond with
+  `Access-Control-Allow-Origin: *` (or your page origin). jsDelivr and other
+  public CDNs do this by default. Self-hosted static servers must enable CORS,
+  otherwise `WORKER_FETCH_FAILED` is thrown when fetching the worker script.
+- **CSP `worker-src`**: the worker is loaded via a same-origin `blob:` URL, so
+  your `Content-Security-Policy` must allow it — e.g.
+  `worker-src 'self' blob:;`. A restrictive `worker-src 'self'` will block the
+  worker from starting.
+- **CSP `connect-src`**: `fetch()` of the worker script and the WASM files must
+  be permitted — include the CDN origin or use `connect-src 'self' https://cdn.jsdelivr.net;`.
 
 ---
 

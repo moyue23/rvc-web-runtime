@@ -175,6 +175,7 @@ RVC-Web-Runtime is now in **Alpha** stage. It is functional for basic use cases 
 - **Model Compatibility**: Only RVC v2 models (768-dim) supported
 - **Browser Support**: Requires WebAssembly with SIMD; WebGPU backend has known issues with onnxruntime-web 1.24
 - **WebGPU Support**: RVC main model has known kernel bugs in WebGPU backend. ContentVec and RMVPE may work with WebGPU but are currently configured to use WASM for consistency.
+- **Cross-origin Worker Loading**: The worker is fetched via CORS and loaded through a same-origin Blob URL so it can run from any CDN. Self-hosted origins must enable CORS; pages with a `Content-Security-Policy` must allow `worker-src 'self' blob:` and add the CDN origin to `connect-src`. See [API docs](./docs/api.md#hosting--security-requirements) for details.
 
 ### 📥 Required Models
 

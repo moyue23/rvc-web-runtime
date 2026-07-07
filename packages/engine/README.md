@@ -81,6 +81,12 @@ See the full [API documentation](https://github.com/moyue23/rvc-web-runtime/blob
 - **Multi-threading**: Requires COOP/COEP headers + SharedArrayBuffer
 - **Web Workers**: All modern browsers
 
+> **Note on cross-origin loading**: the worker is fetched via CORS and loaded
+> through a same-origin Blob URL, so it can be hosted on any CDN that sends
+> `Access-Control-Allow-Origin: *` (jsDelivr does by default). If your page uses
+> a `Content-Security-Policy`, allow `worker-src 'self' blob:;` and add the CDN
+> origin to `connect-src`. See the [API docs](https://github.com/moyue23/rvc-web-runtime/blob/main/docs/api.md) for details.
+
 ## License
 
 MIT
