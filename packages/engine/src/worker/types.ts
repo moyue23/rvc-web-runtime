@@ -8,6 +8,7 @@ import type { ErrorCode } from "../errors/errorCodes";
 export type WorkerRequestMessage =
   | {
       type: "RUN_PIPELINE";
+      assetBaseUrl: string;
       audio: {
         data: Float32Array;
         sampleRate: number;

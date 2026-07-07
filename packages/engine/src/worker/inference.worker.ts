@@ -6,12 +6,6 @@ import { RvcError } from "../errors/RvcError";
 import { ErrorCodes, type ErrorCode } from "../errors/errorCodes";
 import * as ort from "onnxruntime-web";
 
-// Derive WASM path from the worker's own URL.
-// This ensures ort finds its .wasm files as long as they are deployed
-// to the same directory as the worker script (which is the convention
-// with `createRVC({ assetBaseUrl })`).
-ort.env.wasm.wasmPaths = new URL(".", self.location.href).href;
-
 /**
  * Worker entry point for running the RVC pipeline off the main thread.
  * Audio decoding happens on the main thread and the decoded PCM is passed in.
@@ -49,7 +43,14 @@ self.onmessage = async (event: MessageEvent<WorkerRequestMessage>) => {
     return;
   }
 
-  const { audio, files, fileNames, options } = event.data;
+  const { audio, files, fileNames, options, assetBaseUrl } = event.data;
+
+  // Set WASM path from the explicitly-passed URL. This covers both cross-origin
+  // (Blob URL) and same-origin deployments. `self.location` is unreliable for
+  // Blob workers.
+  if (assetBaseUrl) {
+    ort.env.wasm.wasmPaths = assetBaseUrl;
+  }
 
   try {
     // Reconstruct File objects for models (audio already decoded on main thread)

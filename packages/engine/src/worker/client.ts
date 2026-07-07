@@ -13,9 +13,29 @@ export interface WorkerClientOptions extends PipelineOptions {
 }
 
 /**
+ * Fetch the worker script from a (possibly cross-origin) URL and create
+ * a same-origin Blob URL so `new Worker(url, { type: "module" })` works
+ * regardless of where the script is hosted (CDN, custom domain, etc.).
+ */
+async function createWorkerUrl(workerScriptUrl: string): Promise<string> {
+  const response = await fetch(workerScriptUrl);
+  if (!response.ok) {
+    throw new RvcError(
+      "WORKER_FETCH_FAILED",
+      `Failed to fetch worker script from ${workerScriptUrl}: ${response.status}`,
+    );
+  }
+  const code = await response.text();
+  const blob = new Blob([code], { type: "application/javascript" });
+  return URL.createObjectURL(blob);
+}
+
+/**
  * Runs the RVC pipeline in a Web Worker.
  *
- * The worker script is loaded from {@link RvcContext.workerUrl}.
+ * The worker script is fetched from {@link RvcContext.workerUrl}, then
+ * loaded via a same-origin Blob URL to avoid cross-origin restrictions
+ * on module workers.
  */
 export async function runPipelineInWorker(
   ctx: RvcContext,
@@ -26,15 +46,16 @@ export async function runPipelineInWorker(
   options: WorkerClientOptions = {},
 ): Promise<RuntimeContext> {
   const { timeout = 300000, ...pipelineOptions } = options;
-  const [modelBuf, contentVecBuf, rmvpeBuf, indexBuf] = await Promise.all([
+  const [modelBuf, contentVecBuf, rmvpeBuf, indexBuf, workerUrl] = await Promise.all([
     files.model.arrayBuffer(),
     files.contentVec.arrayBuffer(),
     files.rmvpe.arrayBuffer(),
     files.index?.arrayBuffer(),
+    createWorkerUrl(ctx.workerUrl),
   ]);
 
   return new Promise((resolve, reject) => {
-    const worker = new Worker(ctx.workerUrl, {
+    const worker = new Worker(workerUrl, {
       type: "module",
     });
 
@@ -83,6 +104,7 @@ export async function runPipelineInWorker(
 
     worker.postMessage({
       type: "RUN_PIPELINE",
+      assetBaseUrl: ctx.assetBaseUrl,
       audio: {
         data: audioData,
         sampleRate: audioSampleRate,

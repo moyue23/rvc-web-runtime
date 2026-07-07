@@ -23,6 +23,7 @@ export const ErrorCodes = {
   PITCH_INFERENCE_FAILED: "PITCH_INFERENCE_FAILED",
   WORKER_TIMEOUT: "WORKER_TIMEOUT",
   WORKER_UNKNOWN_ERROR: "WORKER_UNKNOWN_ERROR",
+  WORKER_FETCH_FAILED: "WORKER_FETCH_FAILED",
 } as const;
 
 export type ErrorCode = (typeof ErrorCodes)[keyof typeof ErrorCodes];
