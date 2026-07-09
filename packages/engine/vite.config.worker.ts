@@ -4,10 +4,10 @@ import { resolve } from "path";
 /**
  * Separate build config for the inference worker.
  *
- * The worker MUST be self-contained so it can be deployed to a CDN alongside
- * the WASM files. `onnxruntime-web` (~474 KB) and `rvc-onnx-web` (~70 KB) are
- * bundled in; runtime .wasm files are loaded from the same directory via
- * `self.location` (see inference.worker.ts).
+ * The worker MUST be self-contained so it can be deployed to a CDN.
+ * `onnxruntime-web` (~474 KB) and `rvc-onnx-web` (~70 KB) are bundled in;
+ * runtime .wasm files are loaded from the onnxruntime-web CDN via
+ * `wasmBaseUrl` passed in the RUN_PIPELINE message (see inference.worker.ts).
  */
 export default defineConfig({
   resolve: {

@@ -43,13 +43,13 @@ self.onmessage = async (event: MessageEvent<WorkerRequestMessage>) => {
     return;
   }
 
-  const { audio, files, fileNames, options, assetBaseUrl } = event.data;
+  const { audio, files, fileNames, options, wasmBaseUrl } = event.data;
 
-  // Set WASM path from the explicitly-passed URL. This covers both cross-origin
-  // (Blob URL) and same-origin deployments. `self.location` is unreliable for
-  // Blob workers.
-  if (assetBaseUrl) {
-    ort.env.wasm.wasmPaths = assetBaseUrl;
+  // Set WASM path from the explicitly-passed URL. The WASM files are loaded
+  // from the onnxruntime-web package CDN (or a custom location), not from the
+  // worker's own location — `self.location` is unreliable for Blob workers.
+  if (wasmBaseUrl) {
+    ort.env.wasm.wasmPaths = wasmBaseUrl;
   }
 
   try {

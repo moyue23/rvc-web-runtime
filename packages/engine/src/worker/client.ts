@@ -104,7 +104,7 @@ export async function runPipelineInWorker(
 
     worker.postMessage({
       type: "RUN_PIPELINE",
-      assetBaseUrl: ctx.assetBaseUrl,
+      wasmBaseUrl: ctx.wasmBaseUrl,
       audio: {
         data: audioData,
         sampleRate: audioSampleRate,

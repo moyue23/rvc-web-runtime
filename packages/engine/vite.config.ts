@@ -1,12 +1,22 @@
 import { defineConfig } from "vite";
 import { resolve } from "path";
+import { readFileSync } from "node:fs";
 import dts from "vite-plugin-dts";
-import { viteStaticCopy } from "vite-plugin-static-copy";
 import pkg from "./package.json";
+
+// onnxruntime-web's `exports` map restricts `./package.json`, so resolve the
+// file directly from the filesystem instead of via `require.resolve`.
+const ortDir = resolve(__dirname, "../../node_modules/onnxruntime-web");
+const ortVersion = JSON.parse(
+  readFileSync(resolve(ortDir, "package.json"), "utf-8"),
+).version;
 
 export default defineConfig({
   define: {
     __RVC_VERSION__: JSON.stringify(pkg.version),
+    // Inject the onnxruntime-web version so the default WASM CDN URL stays
+    // in sync with the ort version actually bundled into the worker.
+    __ORT_VERSION__: JSON.stringify(ortVersion),
   },
 
   resolve: {
@@ -43,17 +53,8 @@ export default defineConfig({
       include: ["src"],
       outDir: "dist",
     }),
-    viteStaticCopy({
-      targets: [
-        {
-          src: resolve(__dirname, "../../node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.mjs"),
-          dest: "ort-wasm",
-        },
-        {
-          src: resolve(__dirname, "../../node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.wasm"),
-          dest: "ort-wasm",
-        },
-      ],
-    }),
+    // WASM files are NOT copied into this package. They are loaded directly
+    // from the official onnxruntime-web CDN (see `wasmBaseUrl` in rvc.ts),
+    // which always ships a complete set of WASM variants (jsep/asyncify/...).
   ],
 });
