@@ -2,13 +2,10 @@ import "./styles/main.css";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 
-// 暂时使用相对路径导入，等workspace配置好后再改回包导入
-// import { prepareInputAudio, runPipelineInWorker } from "rvc-web-runtime";
-// import type { EngineState } from "rvc-web-runtime";
-
-// 临时：直接从engine源码导入
+// Demo app: import directly from engine source for hot-reload during development.
 import { prepareInputAudio } from "../../engine/src/audio";
 import { runPipelineInWorker } from "../../engine/src/worker/client";
+import { createRVC } from "../../engine/src/rvc";
 import type { EngineState } from "../../engine/src/types/runtime/runtime";
 
 /** Demo-only mapping: stage name → approximate progress for UI display. */
@@ -172,7 +169,17 @@ async function onRun(): Promise<void> {
   const startTime = performance.now();
 
   try {
+    // Use local paths for demo development (not published to CDN yet).
+    // In production, consumers would point assetBaseUrl / wasmBaseUrl to
+    // their own CDN or self-hosted assets.
+    // Must use absolute URL for wasmBaseUrl: the worker runs from a Blob URL,
+    // and onnxruntime-web's internal URL resolution requires an absolute base.
+    const rvc = createRVC({
+      assetBaseUrl: "/",
+      wasmBaseUrl: `${location.origin}/onnx-wasm/`,
+    });
     const ctx = await runPipelineInWorker(
+      rvc,
       modelFiles,
       audioData,
       audioSampleRate,
