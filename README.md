@@ -8,11 +8,11 @@
 
 > **The high-performance inference engine for Singing Voice Conversion (SVC) based on RVC. 100% browser-based.**
 
-RVC-Web-Runtime is a specialized runtime engine focused on delivering industry-standard AI singing voice conversion (RVC) directly in the browser. Powered by **ONNX Runtime Web** (WASM backend, WebGPU support planned), it performs voice inference without any backend server.
+RVC-Web-Runtime is a specialized runtime engine focused on delivering industry-standard AI singing voice conversion (RVC) directly in the browser. Powered by **ONNX Runtime Web** (WASM + WebGPU), it performs voice inference without any backend server.
 
 ## 🌟 Key Features
 
-- **Local browser inference**: Uses `onnxruntime-web` (WASM) to fully run RVC models in-browser with no server relay, ensuring data privacy and zero runtime server cost. WebGPU acceleration planned.
+- **Local browser inference**: Uses `onnxruntime-web` (WASM + WebGPU) to fully run RVC models in-browser with no server relay, ensuring data privacy and zero runtime server cost. ContentVec and RMVPE stages run on WebGPU for ~2/3 overall speedup.
 
 - **Flexible model support**: Natively supports standard `.onnx` models and includes an optional `.pth` auto-conversion adapter for smooth migration from training to production.
 
@@ -108,7 +108,17 @@ npm install rvc-web-runtime
 import { createRVC, runPipelineInWorker } from "rvc-web-runtime";
 
 const rvc = createRVC(); // defaults to jsDelivr CDN
-// Or: createRVC({ assetBaseUrl: "https://your-cdn.com/rvc/" })
+// Self-hosted:
+// const rvc = createRVC({
+//   assetBaseUrl: "https://my-cdn.com/rvc/",       // Worker script location
+//   wasmBaseUrl: "https://my-cdn.com/ort-wasm/",   // ONNX WASM file location
+// });
+
+// WebGPU acceleration (ContentVec + RMVPE, ~2/3 speedup):
+await runPipelineInWorker(rvc, files, audio, sampleRate, {}, {
+  contentVecBackend: "webgpu",
+  rmvpeBackend: "webgpu",
+});
 
 // See API documentation for detailed usage
 ```
@@ -159,7 +169,7 @@ RVC-Web-Runtime is now in **Alpha** stage. It is functional for basic use cases 
 | ------------------------ | -------------------------------------- |
 | **Volume Envelope Mix**  | 🚧 Planned                             |
 | **Voiceless Protection** | 🚧 Planned                             |
-| **WebGPU Acceleration**  | 🚧 Partial (RVC main model has issues) |
+| **WebGPU Acceleration**  | ✅ ContentVec + RMVPE (2/3 speedup), 🚧 RVC main model |
 
 ### ✅ Recently Completed
 
@@ -170,11 +180,11 @@ RVC-Web-Runtime is now in **Alpha** stage. It is functional for basic use cases 
 ### ⚠️ Known Limitations
 
 - **Audio Length**: Long audio (>5 min) may cause memory issues (browser WASM limit ~4GB)
-- **Output Quality**: Minor artifacts present; Retrieval not yet implemented
+- **Output Quality**: Minor artifacts present; retrieval (index-based feature replacement) not yet implemented
 - **Output Sample Rate**: Fixed at 48kHz (input resampled to 16kHz)
+- **WebGPU**: RVC main model is WASM-only due to ONNX Runtime WebGPU kernel bugs. ContentVec and RMVPE support WebGPU via `contentVecBackend` / `rmvpeBackend` options.
 - **Model Compatibility**: Only RVC v2 models (768-dim) supported
-- **Browser Support**: Requires WebAssembly with SIMD; WebGPU backend has known issues with onnxruntime-web 1.24
-- **WebGPU Support**: RVC main model has known kernel bugs in WebGPU backend. ContentVec and RMVPE may work with WebGPU but are currently configured to use WASM for consistency.
+- **Browser Support**: Requires WebAssembly SIMD (WebGPU requires Chrome 113+ / Edge 113+)
 - **Cross-origin Worker Loading**: The worker is fetched via CORS and loaded through a same-origin Blob URL so it can run from any CDN. Self-hosted origins must enable CORS; pages with a `Content-Security-Policy` must allow `worker-src 'self' blob:` and add the CDN origin to `connect-src`. See [API docs](./docs/api.md#hosting--security-requirements) for details.
 
 ### 📥 Required Models

@@ -1,8 +1,8 @@
 # RVC-Web-Runtime API 文档
 
-RVC-Web-Runtime 是一个基于 **WASM** 的 **Retrieval-based Voice Conversion (RVC)** 推理引擎，完全在浏览器端运行。
+RVC-Web-Runtime 是一个基于 ONNX Runtime Web (WASM + WebGPU) 的 **Retrieval-based Voice Conversion (RVC)** 推理引擎，完全在浏览器端运行。
 
-> **注意**：本项目目前仅支持 WASM 后端。WebGPU 后端由于模型内部使用 INT64 数据类型和动态形状广播限制，暂时无法使用。
+> **注意**：ContentVec 和 RMVPE 已支持 WebGPU。RVC 主模型由于 ONNX Runtime WebGPU 内核 bug，仅支持 WASM。
 
 ---
 
@@ -456,38 +456,39 @@ async function convertVoice(
 
 ---
 
-## WebGPU 兼容性说明
+## WebGPU 支持
 
-**当前状态**：WebGPU 在 RVC 主模型上存在已知问题。ContentVec 和 RMVPE 可能支持 WebGPU，但当前配置为使用 WASM。
+### 各模型状态
 
-### 已知问题
+| 模型                       | WebGPU     | 备注                                                           |
+| -------------------------- | ---------- | -------------------------------------------------------------- |
+| **ContentVec**（特征提取） | ✅ 支持    | 整体提速约 2/3                                                 |
+| **RMVPE**（音高估计）      | ✅ 支持    | 整体提速约 2/3                                                 |
+| **RVC 主模型**（语音合成） | 🚧 仅 WASM | ONNX Runtime WebGPU 内核 bug（`Add` 算子在相同形状张量上失败） |
 
-WebGPU 后端在 RVC 主模型上失败，错误信息为：
+### 按模型配置后端
 
+```typescript
+await runPipelineInWorker(
+  rvc,
+  files,
+  audio,
+  sampleRate,
+  {},
+  {
+    contentVecBackend: "webgpu", // 默认: "wasm"
+    rmvpeBackend: "webgpu", // 默认: "wasm"
+    rvcBackend: "wasm", // 默认: "wasm"，不支持 WebGPU
+  },
+);
 ```
-[WebGPU] Kernel "[Add] add_1015" failed. Error: Can't perform binary op on the given tensors
-```
 
-即使两个输入具有完全相同的形状（`[1, 384, 4096]`），仍然会出现此错误，这表明是 onnxruntime-web 1.24 的 WebGPU 实现存在内核错误，而不是形状或类型问题。
-
-### 当前配置
-
-所有模型当前均配置为使用 WASM 后端以保持一致性：
-
-- **RVC 主模型**：使用 `createSessionFromOnnxBuffer()`，默认后端为 `["wasm"]`
-- **ContentVec**：明确配置为 `executionProviders: ["wasm"]`
-- **RMVPE**：明确配置为 `executionProviders: ["wasm"]`
-
-### 测试状态
-
-- **RVC 主模型**：已确认在 WebGPU 上失败（内核错误）
-- **ContentVec**：未在 WebGPU 上测试（可能可用）
-- **RMVPE**：未在 WebGPU 上测试（可能可用）
+每个模型独立尝试配置的后端，无自动回退 — 如果某模型的 WebGPU 失败，整个管线将失败。
 
 ### 建议
 
-1. 继续为所有模型使用 WASM 后端（当前默认配置，稳定）
-2. 等待 onnxruntime-web 更新以修复 WebGPU 内核错误
-3. 如果需要部分加速，可考虑单独测试 ContentVec 和 RMVPE 的 WebGPU 支持
+- 使用 `contentVecBackend: "webgpu"` 和 `rmvpeBackend: "webgpu"` 以获得最佳性能
+- `rvcBackend: "wasm"` 保持不变（默认），等待 ONNX Runtime WebGPU 内核 bug 修复
+- 需要 Chrome 113+ / Edge 113+ 并启用 WebGPU
 
 目前推荐使用 WASM + SIMD + 多线程，这为大多数 RVC 场景提供了足够的性能。

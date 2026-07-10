@@ -1,6 +1,6 @@
 # RVC-Web-Runtime
 
-Browser-based RVC (Retrieval-based Voice Conversion) inference engine powered by ONNX Runtime Web (WASM).
+Browser-based RVC (Retrieval-based Voice Conversion) inference engine powered by ONNX Runtime Web (WASM + WebGPU).
 
 ## Installation
 
@@ -25,7 +25,11 @@ if (!isWorkerSupported()) {
 
 // Create runtime context (zero-config: uses jsDelivr CDN)
 const rvc = createRVC();
-// Or self-hosted: createRVC({ assetBaseUrl: "https://your-cdn.com/rvc/" })
+// Or self-hosted:
+// const rvc = createRVC({
+//   assetBaseUrl: "https://my-cdn.com/rvc/",       // worker script
+//   wasmBaseUrl: "https://my-cdn.com/ort-wasm/",   // ONNX WASM files
+// })
 
 // Prepare audio (decode + resample to 16kHz)
 const { audio: audioData, sampleRate } = await prepareInputAudio(audioFile);
@@ -53,6 +57,9 @@ const result = await runPipelineInWorker(
     timeout: 300000,
     pitchShift: 0,
     medianFilter: true,
+    // WebGPU acceleration (ContentVec + RMVPE):
+    contentVecBackend: "webgpu",
+    rmvpeBackend: "webgpu",
   },
 );
 
@@ -74,7 +81,7 @@ See the full [API documentation](https://github.com/moyue23/rvc-web-runtime/blob
 
 - **Full browser inference**: No server required
 - **Web Worker execution**: Off main thread, non-blocking UI
-- **ONNX Runtime Web**: WASM + SIMD + multi-threading backend
+- **ONNX Runtime Web**: WASM + WebGPU backend with per-model configuration
 - **Complete pipeline**: Feature extraction → Pitch estimation → Voice synthesis
 - **F0 median filtering**: Pitch smoothing for better audio quality
 - **Long audio support**: Automatic chunking and crossfade merging

@@ -1,8 +1,8 @@
 # RVC-Web-Runtime API Documentation
 
-RVC-Web-Runtime is a **WASM-based Retrieval-based Voice Conversion (RVC)** inference engine that runs entirely in the browser.
+RVC-Web-Runtime is a browser-based **Retrieval-based Voice Conversion (RVC)** inference engine powered by ONNX Runtime Web (WASM + WebGPU).
 
-> **Note**: This project currently only supports the WASM backend. WebGPU is not supported due to INT64 data type requirements and dynamic shape broadcasting limitations in the RVC ONNX models.
+> **Note**: ContentVec and RMVPE support WebGPU (~2/3 overall speedup). The RVC main model is WASM-only due to ONNX Runtime WebGPU kernel bugs.
 
 ---
 
@@ -460,38 +460,30 @@ async function convertVoice(
 
 ---
 
-## WebGPU Compatibility Notes
+## WebGPU Support
 
-**Current Status**: WebGPU has known issues with the RVC main model. ContentVec and RMVPE may work with WebGPU but are currently configured to use WASM.
+### Per-Model Status
 
-### Known Issues
+| Model | WebGPU | Notes |
+|-------|--------|-------|
+| **ContentVec** (feature extraction) | ✅ Supported | ~2/3 overall speedup |
+| **RMVPE** (pitch estimation) | ✅ Supported | ~2/3 overall speedup |
+| **RVC Main Model** (voice synthesis) | 🚧 WASM only | ONNX Runtime WebGPU kernel bug (`Add` op fails on identical-shape tensors) |
 
-The WebGPU backend fails on the RVC main model with the error:
+### Per-Model Backend Options
 
+```typescript
+await runPipelineInWorker(rvc, files, audio, sampleRate, {}, {
+  contentVecBackend: "webgpu",  // default: "wasm"
+  rmvpeBackend: "webgpu",       // default: "wasm"
+  rvcBackend: "wasm",           // default: "wasm", WebGPU not supported
+});
 ```
-[WebGPU] Kernel "[Add] add_1015" failed. Error: Can't perform binary op on the given tensors
-```
 
-This occurs even though both inputs have identical shapes (`[1, 384, 4096]`), indicating a kernel bug in onnxruntime-web 1.24's WebGPU implementation rather than shape/type issues.
-
-### Current Configuration
-
-All models are currently configured to use WASM backend for consistency:
-
-- **RVC Main Model**: Uses `createSessionFromOnnxBuffer()` with default `["wasm"]` backends
-- **ContentVec**: Explicitly configured with `executionProviders: ["wasm"]`
-- **RMVPE**: Explicitly configured with `executionProviders: ["wasm"]`
-
-### Testing Status
-
-- **RVC Main Model**: Confirmed to fail with WebGPU (kernel bug)
-- **ContentVec**: Not tested with WebGPU (may work)
-- **RMVPE**: Not tested with WebGPU (may work)
+Each model independently tries its configured backend. No automatic fallback — if WebGPU fails for a model, the entire pipeline will fail.
 
 ### Recommendations
 
-1. Continue using WASM backend for all models (current default, stable configuration)
-2. Wait for onnxruntime-web updates that may fix the WebGPU kernel bugs
-3. Consider testing WebGPU for ContentVec and RMVPE separately if partial acceleration is desired
-
-Currently, WASM + SIMD + multi-threading is recommended, which provides sufficient performance for most RVC scenarios.
+- Use `contentVecBackend: "webgpu"` and `rmvpeBackend: "webgpu"` for best performance
+- Keep `rvcBackend: "wasm"` (default) until the ONNX Runtime WebGPU kernel bug is resolved
+- Requires Chrome 113+ / Edge 113+ with WebGPU enabled

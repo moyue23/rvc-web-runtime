@@ -8,11 +8,11 @@
 
 > **基于 RVC 的高性能人声音色转换推理引擎。100% 浏览器端运行。**
 
-RVC-Web-Runtime 是一个专用执行引擎，致力于在浏览器中实现业界标准的 AI 歌声音色转换（RVC）。通过 **ONNX Runtime Web** (WASM 后端，WebGPU 支持计划中)，它在无需后端服务器的情况下实现声音推理。
+RVC-Web-Runtime 是一个专用执行引擎，致力于在浏览器中实现业界标准的 AI 歌声音色转换（RVC）。通过 **ONNX Runtime Web** (WASM + WebGPU)，它在无需后端服务器的情况下实现声音推理。
 
 ## 🌟 核心优势
 
-- **本地浏览器推理**：利用 `onnxruntime-web` (WASM) 实现 RVC 模型在浏览器端的全本地化推理，无服务器中转，确保数据隐私与零运行成本。WebGPU 加速计划中。
+- **本地浏览器推理**：利用 `onnxruntime-web` (WASM + WebGPU) 实现 RVC 模型在浏览器端的全本地化推理，无服务器中转，确保数据隐私与零运行成本。ContentVec 与 RMVPE 阶段支持 WebGPU 加速，整体提速约 2/3。
 
 - **多态模型支持**：原生支持标准 `.onnx` 格式，并内置可选的 `.pth` 自动转换适配器，实现从训练环境到生产环境的无缝迁移。
 
@@ -56,7 +56,7 @@ rvc-web-runtime/
 │   │       │   ├── runner.ts          # ONNX 推理执行
 │   │       │   ├── aligner.ts         # 特征-音高对齐
 │   │       │   ├── builder.ts         # ONNX 图构建
-│   │       │   ├── output.ts          # 输���后处理
+│   │       │   ├── output.ts          # 输出后处理
 │   │       │   └── types.ts           # 合成类型定义
 │   │       ├── timbre/                # 声音音色管理
 │   │       │   ├── index.ts           # 模块入口 (createVoiceTimbre)
@@ -108,7 +108,17 @@ npm install rvc-web-runtime
 import { createRVC, runPipelineInWorker } from "rvc-web-runtime";
 
 const rvc = createRVC(); // 默认使用 jsDelivr CDN
-// 或者: createRVC({ assetBaseUrl: "https://your-cdn.com/rvc/" })
+// 自托管:
+// const rvc = createRVC({
+//   assetBaseUrl: "https://my-cdn.com/rvc/",       // Worker 脚本位置
+//   wasmBaseUrl: "https://my-cdn.com/ort-wasm/",   // ONNX WASM 文件位置
+// });
+
+// WebGPU 加速（ContentVec + RMVPE，整体提速约 2/3）:
+await runPipelineInWorker(rvc, files, audio, sampleRate, {}, {
+  contentVecBackend: "webgpu",
+  rmvpeBackend: "webgpu",
+});
 
 // 详细用法请参考 API 文档
 ```
@@ -155,12 +165,11 @@ RVC-Web-Runtime 目前处于 **稳定测试版** 阶段。核心功能完整且�
 
 ### 📋 计划中
 
-| 功能                | 状态                            |
-| ------------------- | ------------------------------- |
-| **音量包络融合**    | 🚧 计划中                       |
-| **清辅音/呼吸保护** | 🚧 计划中                       |
-| **F0 中值滤波**     | 🚧 计划中                       |
-| **WebGPU 加速**     | 🚧 部分支持（RVC 主模型有问题） |
+| 功能                | 状态                                 |
+| ------------------- | ------------------------------------ |
+| **音量包络融合**    | 🚧 计划中                            |
+| **清辅音/呼吸保护** | 🚧 计划中                            |
+| **WebGPU 加速**     | ✅ ContentVec + RMVPE，🚧 RVC 主模型 |
 
 ### ⚠️ 已知限制
 
@@ -168,8 +177,8 @@ RVC-Web-Runtime 目前处于 **稳定测试版** 阶段。核心功能完整且�
 - **输出质量**：存在轻微杂音；特征检索尚未实现
 - **输出采样率**：固定 48kHz（输入重采样为 16kHz）
 - **模型兼容性**：仅支持 RVC v2 模型（768 维）
-- **浏览器支持**：需要 WebAssembly SIMD；WebGPU 后端在 onnxruntime-web 1.24 中存在已知问题
-- **WebGPU 支持**：RVC 主模型在 WebGPU 后端存在已知的内核错误。ContentVec 和 RMVPE 可能支持 WebGPU，但当前为保持一致性配置为使用 WASM。
+- **浏览器支持**：需要 WebAssembly SIMD（WebGPU 需 Chrome 113+ / Edge 113+）
+- **WebGPU 支持**：RVC 主模型仅支持 WASM（ONNX Runtime WebGPU 内核 bug）。ContentVec 和 RMVPE 已支持 WebGPU，通过 `contentVecBackend: "webgpu"` / `rmvpeBackend: "webgpu"` 开启。
 
 ### 📥 所需模型
 
