@@ -64,25 +64,31 @@ export async function runPipeline(
     ctx.modelMetaData = metaData;
 
     // Pre-load all models once for reuse
+    const rvcBackend = options.rvcBackend ?? "wasm";
+    const cvBackend = options.contentVecBackend ?? "wasm";
+    const rpBackend = options.rmvpeBackend ?? "wasm";
+
     const [rvcSession, contentVecBuffer, rmvpeBuffer] = await Promise.all([
-      createSessionFromOnnxBuffer(onnxBuffer).then((r) => r.session),
+      createSessionFromOnnxBuffer(onnxBuffer, { preferredBackends: [rvcBackend] }).then(
+        (r) => r.session,
+      ),
       files.contentVec.arrayBuffer(),
       files.rmvpe.arrayBuffer(),
     ]);
 
     const [contentVecSession, rmvpeSession] = await Promise.all([
       ort.InferenceSession.create(contentVecBuffer, {
-        executionProviders: ["wasm"],
+        executionProviders: [cvBackend],
         graphOptimizationLevel: "all",
       }),
       ort.InferenceSession.create(rmvpeBuffer, {
-        executionProviders: ["wasm"],
+        executionProviders: [rpBackend],
         graphOptimizationLevel: "all",
       }),
     ]);
 
     ctx.modelSession = rvcSession;
-    ctx.backend = "wasm";
+    ctx.backend = rvcBackend;
 
     emitStage(PIPELINE_STAGES[2]);
 

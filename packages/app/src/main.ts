@@ -193,7 +193,15 @@ async function onRun(): Promise<void> {
           }
         },
       },
-      { speakerId, pitchShift, medianFilter, medianFilterWindow, aggressiveMedianFilter },
+      {
+        speakerId,
+        pitchShift,
+        medianFilter,
+        medianFilterWindow,
+        aggressiveMedianFilter,
+        contentVecBackend: "webgpu",
+        rmvpeBackend: "webgpu",
+      },
     );
 
     const endTime = performance.now();

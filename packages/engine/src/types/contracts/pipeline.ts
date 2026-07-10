@@ -1,4 +1,5 @@
 import type { EngineState } from "../runtime/runtime";
+import type { SessionBackend } from "../../model/sessionFactory";
 
 /**
  * External input files for one pipeline run.
@@ -41,4 +42,10 @@ export interface PipelineOptions {
   medianFilterWindow?: number;
   /** Use aggressive median filtering (larger window, stronger smoothing) */
   aggressiveMedianFilter?: boolean;
+  /** Backend for the RVC voice model (default: "wasm") */
+  rvcBackend?: SessionBackend;
+  /** Backend for ContentVec feature extraction (default: "wasm") */
+  contentVecBackend?: SessionBackend;
+  /** Backend for RMVPE pitch estimation (default: "wasm") */
+  rmvpeBackend?: SessionBackend;
 }
