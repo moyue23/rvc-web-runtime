@@ -68,9 +68,9 @@ function createRVC(config?: RvcConfig): RvcContext;
 
 **参数**
 
-| 参数     | 类型        | 说明                    |
-| -------- | ----------- | ----------------------- |
-| `config` | `RvcConfig` | 可选。配置见下方。      |
+| 参数     | 类型        | 说明               |
+| -------- | ----------- | ------------------ |
+| `config` | `RvcConfig` | 可选。配置见下方。 |
 
 **RvcConfig**
 
@@ -87,7 +87,7 @@ interface RvcConfig {
 ```typescript
 interface RvcContext {
   readonly assetBaseUrl: string; // 解析后的基础 URL（保证以 / 结尾）
-  readonly workerUrl: string;    // inference.worker.js 的完整 URL
+  readonly workerUrl: string; // inference.worker.js 的完整 URL
 }
 ```
 
@@ -124,14 +124,14 @@ async function runPipelineInWorker(
 
 **参数**
 
-| 参数              | 类型                           | 说明                                   |
-| ----------------- | ------------------------------ | -------------------------------------- |
-| `ctx`             | `RvcContext`                   | `createRVC()` 返回的运行时上下文       |
-| `files`           | `Omit<PipelineFiles, "audio">` | 模型文件对象（不含音频）               |
-| `audioData`       | `Float32Array`                 | 已解码的单声道 PCM 数据                |
-| `audioSampleRate` | `number`                       | 音频采样率，**必须为 16000**           |
-| `callbacks`       | `PipelineCallbacks`            | 可选回调函数                           |
-| `options`         | `WorkerClientOptions`          | 可选配置                               |
+| 参数              | 类型                           | 说明                             |
+| ----------------- | ------------------------------ | -------------------------------- |
+| `ctx`             | `RvcContext`                   | `createRVC()` 返回的运行时上下文 |
+| `files`           | `Omit<PipelineFiles, "audio">` | 模型文件对象（不含音频）         |
+| `audioData`       | `Float32Array`                 | 已解码的单声道 PCM 数据          |
+| `audioSampleRate` | `number`                       | 音频采样率，**必须为 16000**     |
+| `callbacks`       | `PipelineCallbacks`            | 可选回调函数                     |
+| `options`         | `WorkerClientOptions`          | 可选配置                         |
 
 **返回值**
 
@@ -364,10 +364,10 @@ function isWorkerSupported(): boolean;
 
 ### Worker 相关
 
-| 错误码                 | 说明                                  |
-| ---------------------- | ------------------------------------- |
-| `WORKER_TIMEOUT`       | 推理超时                              |
-| `WORKER_UNKNOWN_ERROR` | Worker 未知错误                       |
+| 错误码                 | 说明                                    |
+| ---------------------- | --------------------------------------- |
+| `WORKER_TIMEOUT`       | 推理超时                                |
+| `WORKER_UNKNOWN_ERROR` | Worker 未知错误                         |
 | `WORKER_FETCH_FAILED`  | 拉取 Worker 脚本失败（CORS / 网络错误） |
 
 ---

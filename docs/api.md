@@ -68,9 +68,9 @@ function createRVC(config?: RvcConfig): RvcContext;
 
 **Parameters**
 
-| Parameter | Type        | Description               |
-| --------- | ----------- | ------------------------- |
-| `config`  | `RvcConfig` | Optional. See below.      |
+| Parameter | Type        | Description          |
+| --------- | ----------- | -------------------- |
+| `config`  | `RvcConfig` | Optional. See below. |
 
 **RvcConfig**
 
@@ -87,7 +87,7 @@ If `assetBaseUrl` is omitted, jsDelivr CDN is used by default: `https://cdn.jsde
 ```typescript
 interface RvcContext {
   readonly assetBaseUrl: string; // Resolved base URL (trailing / guaranteed)
-  readonly workerUrl: string;    // Full URL to inference.worker.js
+  readonly workerUrl: string; // Full URL to inference.worker.js
 }
 ```
 
@@ -127,14 +127,14 @@ async function runPipelineInWorker(
 
 **Parameters**
 
-| Parameter         | Type                           | Description                                     |
-| ----------------- | ------------------------------ | ----------------------------------------------- |
-| `ctx`             | `RvcContext`                   | Runtime context from `createRVC()`              |
-| `files`           | `Omit<PipelineFiles, "audio">` | Model files (without audio)                     |
-| `audioData`       | `Float32Array`                 | Decoded mono PCM data                           |
-| `audioSampleRate` | `number`                       | Audio sample rate, **must be 16000**            |
-| `callbacks`       | `PipelineCallbacks`            | Optional callbacks                              |
-| `options`         | `WorkerClientOptions`          | Optional configuration                          |
+| Parameter         | Type                           | Description                          |
+| ----------------- | ------------------------------ | ------------------------------------ |
+| `ctx`             | `RvcContext`                   | Runtime context from `createRVC()`   |
+| `files`           | `Omit<PipelineFiles, "audio">` | Model files (without audio)          |
+| `audioData`       | `Float32Array`                 | Decoded mono PCM data                |
+| `audioSampleRate` | `number`                       | Audio sample rate, **must be 16000** |
+| `callbacks`       | `PipelineCallbacks`            | Optional callbacks                   |
+| `options`         | `WorkerClientOptions`          | Optional configuration               |
 
 **Returns**
 
@@ -367,10 +367,10 @@ All errors are thrown via `RvcError`, containing `code` and `message`.
 
 ### Worker Related
 
-| Error Code             | Description                                  |
-| ---------------------- | -------------------------------------------- |
-| `WORKER_TIMEOUT`       | Inference timeout                            |
-| `WORKER_UNKNOWN_ERROR` | Worker unknown error                         |
+| Error Code             | Description                                                   |
+| ---------------------- | ------------------------------------------------------------- |
+| `WORKER_TIMEOUT`       | Inference timeout                                             |
+| `WORKER_UNKNOWN_ERROR` | Worker unknown error                                          |
 | `WORKER_FETCH_FAILED`  | Failed to fetch the worker script (e.g. CORS / network error) |
 
 ---

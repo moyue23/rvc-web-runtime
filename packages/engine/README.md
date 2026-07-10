@@ -11,7 +11,12 @@ npm install rvc-web-runtime
 ## Usage
 
 ```typescript
-import { createRVC, runPipelineInWorker, prepareInputAudio, isWorkerSupported } from "rvc-web-runtime";
+import {
+  createRVC,
+  runPipelineInWorker,
+  prepareInputAudio,
+  isWorkerSupported,
+} from "rvc-web-runtime";
 
 // Check browser support
 if (!isWorkerSupported()) {
@@ -29,9 +34,9 @@ const { audio: audioData, sampleRate } = await prepareInputAudio(audioFile);
 const result = await runPipelineInWorker(
   rvc,
   {
-    model: modelFile,      // .onnx or .pth file
+    model: modelFile, // .onnx or .pth file
     contentVec: hubertFile, // ContentVec ONNX model
-    rmvpe: rmvpeFile,       // RMVPE ONNX model
+    rmvpe: rmvpeFile, // RMVPE ONNX model
   },
   audioData,
   sampleRate,

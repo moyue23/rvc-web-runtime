@@ -5,9 +5,7 @@ import { readFileSync } from "node:fs";
 import enginePkg from "../engine/package.json";
 
 const ortDir = resolve(__dirname, "../../node_modules/onnxruntime-web");
-const ortVersion = JSON.parse(
-  readFileSync(resolve(ortDir, "package.json"), "utf-8"),
-).version;
+const ortVersion = JSON.parse(readFileSync(resolve(ortDir, "package.json"), "utf-8")).version;
 
 export default defineConfig({
   define: {

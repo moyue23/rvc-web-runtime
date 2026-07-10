@@ -7,9 +7,7 @@ import pkg from "./package.json";
 // onnxruntime-web's `exports` map restricts `./package.json`, so resolve the
 // file directly from the filesystem instead of via `require.resolve`.
 const ortDir = resolve(__dirname, "../../node_modules/onnxruntime-web");
-const ortVersion = JSON.parse(
-  readFileSync(resolve(ortDir, "package.json"), "utf-8"),
-).version;
+const ortVersion = JSON.parse(readFileSync(resolve(ortDir, "package.json"), "utf-8")).version;
 
 export default defineConfig({
   define: {
